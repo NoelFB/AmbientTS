@@ -4,8 +4,10 @@
 
 class Ambient
 {
+	// static reference
     public static instance:Ambient;
 
+    // public variables
     public name:string;
     public width:number;
     public height:number;
@@ -15,24 +17,32 @@ class Ambient
     public camera:AmPoint = new AmPoint(0, 0);
     public clear:string = "#0e2129";
 
+    // the main canvas to draw to
     public canvas:any;
     public context:CanvasRenderingContext2D;
 
+    // the visible canvas in the browser
     public canvasScaled:any;
     public contextScaled:any;
 
+    // input references
     public mouse:AmMouse;
     public keyboard:AmKeyboard;
 
+    // current scene, and the next scene to go to
     private _scene:AmScene = null;
     private _goto:AmScene = null;
+
+    // time, used for deltaTime
     private _date:number;
 
     constructor(name:string, width:number, height:number, scale:number, fps:number)
     {
+    	// set static references
         Ambient.instance = this;
         Am = this;
 
+        // define self
         this.name = name;
         this.width = width;
         this.height = height;
@@ -41,7 +51,7 @@ class Ambient
         this.deltaTime = fps / 1000;
     }
 
-    public Initialize()
+    public Run()
     {
         window.onload = () =>
         {
@@ -49,7 +59,7 @@ class Ambient
             document.head.title = this.name + " :: Ambient TS";
             document.body.style.backgroundColor = "#222";
 
-            // create the scene
+            // create the container ... can ignore this later, maybe
             var container = document.createElement("div");
             document.body.appendChild(container);
             container.style.width = (this.width * this.scale) + "px";
@@ -162,4 +172,5 @@ class Ambient
     }
 }
 
+// Global shortform reference to the Ambient app
 var Am:Ambient;
