@@ -48,28 +48,25 @@ class AmKeyboard
 
 class AmKey
 {
+    public static BACKSPACE:number = 8;
+    public static TAB:number = 9;
+    public static ENTER:number = 13;
+    public static COMMAND:number = 15;
+    public static SHIFT:number = 16;
+    public static CONTROL:number = 17;
+    public static CAPS_LOCK:number = 20;
+    public static ESCAPE:number = 27;
+    public static SPACE:number = 32;
+    public static PAGE_UP:number = 33;
+    public static PAGE_DOWN:number = 34;
+    public static END:number = 35;
+    public static HOME:number = 36;
     public static LEFT:number = 37;
     public static UP:number = 38;
     public static RIGHT:number = 39;
     public static DOWN:number = 40;
-
-    public static ENTER:number = 13;
-    public static COMMAND:number = 15;
-    public static CONTROL:number = 17;
-    public static SPACE:number = 32;
-    public static SHIFT:number = 16;
-    public static BACKSPACE:number = 8;
-    public static CAPS_LOCK:number = 20;
-    public static DELETE:number = 46;
-    public static END:number = 35;
-    public static ESCAPE:number = 27;
-    public static HOME:number = 36;
     public static INSERT:number = 45;
-    public static TAB:number = 9;
-    public static PAGE_DOWN:number = 34;
-    public static PAGE_UP:number = 33;
-    public static LEFT_SQUARE_BRACKET:number = 219;
-    public static RIGHT_SQUARE_BRACKET:number = 221;
+    public static DELETE:number = 46;
 
     public static A:number = 65;
     public static B:number = 66;
@@ -125,20 +122,6 @@ class AmKey
     public static DIGIT_8:number = 56;
     public static DIGIT_9:number = 57;
 
-    public static NUMPAD_0:number = 96;
-    public static NUMPAD_1:number = 97;
-    public static NUMPAD_2:number = 98;
-    public static NUMPAD_3:number = 99;
-    public static NUMPAD_4:number = 100;
-    public static NUMPAD_5:number = 101;
-    public static NUMPAD_6:number = 102;
-    public static NUMPAD_7:number = 103;
-    public static NUMPAD_8:number = 104;
-    public static NUMPAD_9:number = 105;
-    public static NUMPAD_ADD:number = 107;
-    public static NUMPAD_DECIMAL:number = 110;
-    public static NUMPAD_DIVIDE:number = 111;
-    public static NUMPAD_ENTER:number = 108;
-    public static NUMPAD_MULTIPLY:number = 106;
-    public static NUMPAD_SUBTRACT:number = 109;
+    public static LEFT_SQUARE_BRACKET:number = 219;
+    public static RIGHT_SQUARE_BRACKET:number = 221;
 }
