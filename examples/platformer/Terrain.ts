@@ -31,73 +31,125 @@ class Terrain extends AmEntity
         this.GenerateTiles();
     }
 
+    public Update()
+    {
+        super.Update();
+
+        if (Am.mouse.leftPressed || Am.mouse.rightPressed)
+        {
+            var point:AmPoint = new AmPoint(Math.floor(Am.mouse.X() / 8), Math.floor(Am.mouse.Y() / 8));
+            this.collider.Set(point.x, point.y, Am.mouse.leftPressed);
+
+            this.tilemap.ClearRect(point.x - 1, point.y - 1, 3, 3);
+            for (var i = -1; i < 2; i ++)
+                for (var j = -1; j < 2; j ++)
+                    this.GenerateTile(point.x + i, point.y + j);
+        }
+    }
+
     public GenerateTiles()
     {
         for (var i = 0; i < this.collider.columns; i ++)
-        {
             for (var j = 0; j < this.collider.rows; j ++)
-            {
-                if (this.collider.Get(i, j))
-                {
-                    var up:boolean = this.collider.Get(i, j - 1);
-                    var right:boolean = this.collider.Get(i + 1, j);
-                    var left:boolean = this.collider.Get(i - 1, j);
-                    var down:boolean = this.collider.Get(i, j + 1);
+                this.GenerateTile(i, j);
+    }
 
-                    if (left && up && down && right)
-                    {
-                        this.tilemap.Set(i, j, 2, 2);
-                    }
-                    else if (left && !up && right && down)
-                    {
-                        this.tilemap.Set(i, j - 1, 2, 0);
-                        this.tilemap.Set(i, j, 2, 1);
-                    }
-                    else if (left && up && right && !down)
-                    {
-                        this.tilemap.Set(i, j, 2, 3);
-                        this.tilemap.Set(i, j + 1, 2, 4);
-                    }
-                    else if (!left && up && right && down)
-                    {
-                        this.tilemap.Set(i - 1, j, 0, 2);
-                        this.tilemap.Set(i, j, 1, 2);
-                    }
-                    else if (left && up && !right && down)
-                    {
-                        this.tilemap.Set(i, j, 3, 2);
-                        this.tilemap.Set(i + 1, j, 4, 2);
-                    }
-                    else if (!left && !up && right && down)
-                    {
-                        this.tilemap.Set(i - 1, j - 1, 0, 0);
-                        this.tilemap.Set(i, j - 1, 1, 0);
-                        this.tilemap.Set(i - 1, j, 0, 1);
-                        this.tilemap.Set(i, j, 1, 1);
-                    }
-                    else if (left && !up && !right && down)
-                    {
-                        this.tilemap.Set(i, j - 1, 3, 0);
-                        this.tilemap.Set(i + 1, j - 1, 4, 0);
-                        this.tilemap.Set(i, j, 3, 1);
-                        this.tilemap.Set(i + 1, j, 4, 1);
-                    }
-                    else if (!left && up && right && !down)
-                    {
-                        this.tilemap.Set(i - 1, j, 0, 3);
-                        this.tilemap.Set(i, j, 1, 3);
-                        this.tilemap.Set(i - 1, j + 1, 0, 4);
-                        this.tilemap.Set(i, j + 1, 1, 4);
-                    }
-                    else if (left && up && !right && !down)
-                    {
-                        this.tilemap.Set(i, j, 3, 3);
-                        this.tilemap.Set(i + 1, j, 4, 3);
-                        this.tilemap.Set(i, j + 1, 3, 4);
-                        this.tilemap.Set(i + 1, j, 4, 4);
-                    }
-                }
+    public GenerateTile(x:number, y:number)
+    {
+        var up:boolean = this.collider.Get(x, y - 1);
+        var right:boolean = this.collider.Get(x + 1, y);
+        var left:boolean = this.collider.Get(x - 1, y);
+        var down:boolean = this.collider.Get(x, y + 1);
+
+        if (this.collider.Get(x, y))
+        {
+            if (left && up && down && right)
+            {
+                this.tilemap.Set(x, y, 2, 2);
+            }
+            else if (left && !up && right && down)
+            {
+                this.tilemap.Set(x, y, 2, 1);
+            }
+            else if (left && up && right && !down)
+            {
+                this.tilemap.Set(x, y, 2, 3);
+            }
+            else if (!left && up && right && down)
+            {
+                this.tilemap.Set(x, y, 1, 2);
+            }
+            else if (left && up && !right && down)
+            {
+                this.tilemap.Set(x, y, 3, 2);
+            }
+            else if (!left && !up && right && down)
+            {
+                this.tilemap.Set(x, y, 1, 1);
+            }
+            else if (left && !up && !right && down)
+            {
+                this.tilemap.Set(x, y, 3, 1);
+            }
+            else if (!left && up && right && !down)
+            {
+                this.tilemap.Set(x, y, 1, 3);
+            }
+            else if (left && up && !right && !down)
+            {
+                this.tilemap.Set(x, y, 3, 3);
+            }
+            else if (!left && up && !right && down)
+            {
+                this.tilemap.Set(x, y, 5, 2);
+            }
+            else if (left && !up && right && !down)
+            {
+                this.tilemap.Set(x, y, 2, 5);
+            }
+            else if (!left && !up && !right && down)
+            {
+                this.tilemap.Set(x, y, 5, 1);
+            }
+            else if (!left && up && !right && !down)
+            {
+                this.tilemap.Set(x, y, 5, 3);
+            }
+            else if (!left && !up && right && !down)
+            {
+                this.tilemap.Set(x, y, 1, 5);
+            }
+            else if (left && !up && !right && !down)
+            {
+                this.tilemap.Set(x, y, 3, 5);
+            }
+            else if (!left && !up && !right && !down)
+            {
+                this.tilemap.Set(x, y, 5, 5);
             }
         }
+        else
+        {
+            if (down)
+                this.tilemap.Set(x, y, 1 + Math.floor(Math.random() * 3), 0);
+            if (right)
+                this.tilemap.Set(x, y, 0, 1 + Math.floor(Math.random() * 3));
+            if (up)
+                this.tilemap.Set(x, y, 1 + Math.floor(Math.random() * 3), 4);
+            if (left)
+                this.tilemap.Set(x, y, 4, 1 + Math.floor(Math.random() * 3));
+        }
+        
+    }
+
+    public Render()
+    {
+        super.Render();
+
+        Am.context.beginPath();
+        Am.context.rect(Math.floor(Am.mouse.X() / 8) * 8, Math.floor(Am.mouse.Y() / 8) * 8, 8, 8);
+        Am.context.lineWidth = 1;
+        Am.context.strokeStyle = '#ff0000';
+        Am.context.stroke();
     }
 }

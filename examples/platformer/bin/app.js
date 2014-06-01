@@ -122,23 +122,36 @@ var AmMouse = (function () {
     function AmMouse(canvas) {
         var _this = this;
         this.position = new AmPoint(0, 0);
-        this.pressed = false;
-        this.released = false;
-        this.down = false;
+        this.leftPressed = false;
+        this.leftReleased = false;
+        this.leftDown = false;
+        this.rightPressed = false;
+        this.rightReleased = false;
+        this.rightDown = false;
         this.canvas = canvas;
 
         this.canvas.onmousemove = function (e) {
-            _this.position = new AmPoint(e.offsetX, e.offsetY);
+            _this.position = new AmPoint(e.offsetX / Am.scale + Am.camera.x, e.offsetY / Am.scale + Am.camera.y);
         };
 
         this.canvas.onmousedown = function (e) {
-            _this.pressed = true;
-            _this.down = true;
+            if (("which" in e && e.which == 3) || ("button" in e && e.button == 2)) {
+                _this.rightPressed = true;
+                _this.rightDown = true;
+            } else {
+                _this.leftPressed = true;
+                _this.leftDown = true;
+            }
         };
 
         this.canvas.onmouseup = function (e) {
-            _this.released = true;
-            _this.down = false;
+            if (("which" in e && e.which == 3) || ("button" in e && e.button == 2)) {
+                _this.rightReleased = true;
+                _this.rightDown = false;
+            } else {
+                _this.leftReleased = true;
+                _this.leftDown = false;
+            }
         };
     }
     AmMouse.prototype.X = function () {
@@ -150,8 +163,10 @@ var AmMouse = (function () {
     };
 
     AmMouse.prototype.Clear = function () {
-        this.pressed = false;
-        this.released = false;
+        this.leftPressed = false;
+        this.leftReleased = false;
+        this.rightPressed = false;
+        this.rightReleased = false;
     };
     return AmMouse;
 })();
@@ -195,28 +210,25 @@ var AmKeyboard = (function () {
 var AmKey = (function () {
     function AmKey() {
     }
+    AmKey.BACKSPACE = 8;
+    AmKey.TAB = 9;
+    AmKey.ENTER = 13;
+    AmKey.COMMAND = 15;
+    AmKey.SHIFT = 16;
+    AmKey.CONTROL = 17;
+    AmKey.CAPS_LOCK = 20;
+    AmKey.ESCAPE = 27;
+    AmKey.SPACE = 32;
+    AmKey.PAGE_UP = 33;
+    AmKey.PAGE_DOWN = 34;
+    AmKey.END = 35;
+    AmKey.HOME = 36;
     AmKey.LEFT = 37;
     AmKey.UP = 38;
     AmKey.RIGHT = 39;
     AmKey.DOWN = 40;
-
-    AmKey.ENTER = 13;
-    AmKey.COMMAND = 15;
-    AmKey.CONTROL = 17;
-    AmKey.SPACE = 32;
-    AmKey.SHIFT = 16;
-    AmKey.BACKSPACE = 8;
-    AmKey.CAPS_LOCK = 20;
-    AmKey.DELETE = 46;
-    AmKey.END = 35;
-    AmKey.ESCAPE = 27;
-    AmKey.HOME = 36;
     AmKey.INSERT = 45;
-    AmKey.TAB = 9;
-    AmKey.PAGE_DOWN = 34;
-    AmKey.PAGE_UP = 33;
-    AmKey.LEFT_SQUARE_BRACKET = 219;
-    AmKey.RIGHT_SQUARE_BRACKET = 221;
+    AmKey.DELETE = 46;
 
     AmKey.A = 65;
     AmKey.B = 66;
@@ -272,22 +284,8 @@ var AmKey = (function () {
     AmKey.DIGIT_8 = 56;
     AmKey.DIGIT_9 = 57;
 
-    AmKey.NUMPAD_0 = 96;
-    AmKey.NUMPAD_1 = 97;
-    AmKey.NUMPAD_2 = 98;
-    AmKey.NUMPAD_3 = 99;
-    AmKey.NUMPAD_4 = 100;
-    AmKey.NUMPAD_5 = 101;
-    AmKey.NUMPAD_6 = 102;
-    AmKey.NUMPAD_7 = 103;
-    AmKey.NUMPAD_8 = 104;
-    AmKey.NUMPAD_9 = 105;
-    AmKey.NUMPAD_ADD = 107;
-    AmKey.NUMPAD_DECIMAL = 110;
-    AmKey.NUMPAD_DIVIDE = 111;
-    AmKey.NUMPAD_ENTER = 108;
-    AmKey.NUMPAD_MULTIPLY = 106;
-    AmKey.NUMPAD_SUBTRACT = 109;
+    AmKey.LEFT_SQUARE_BRACKET = 219;
+    AmKey.RIGHT_SQUARE_BRACKET = 221;
     return AmKey;
 })();
 var Ambient = (function () {
@@ -337,7 +335,11 @@ var Ambient = (function () {
             _this.context = _this.canvas.getContext("2d");
 
             _this.keyboard = new AmKeyboard(_this.canvas);
-            _this.mouse = new AmMouse(_this.canvas);
+            _this.mouse = new AmMouse(_this.canvasScaled);
+
+            _this.canvasScaled.oncontextmenu = function (e) {
+                e.preventDefault();
+            };
 
             _this._date = (new Date()).getTime();
             setInterval(function () {
@@ -718,8 +720,8 @@ var Loader = (function (_super) {
         _super.call(this);
         this.percent = 0;
 
-        assets.AddTexture("grass", "assets/textures/grass.png");
-        assets.AddTexture("player", "assets/textures/player.png");
+        assets.AddTexture("grass", "textures/grass.png");
+        assets.AddTexture("player", "textures/player.png");
         assets.Load(null, null);
     }
     Loader.prototype.Begin = function () {
@@ -1044,13 +1046,28 @@ var AmTilemap = (function (_super) {
         }
     }
     AmTilemap.prototype.Set = function (column, row, tileX, tileY) {
-        if (!this.stacking)
-            this.data[column][row] = new Array();
-        this.data[column][row].push(this.GetIndex(tileX, tileY));
+        if (column >= 0 && row >= 0 && column < this.columns && row < this.rows) {
+            if (!this.stacking)
+                this.data[column][row] = new Array();
+            this.data[column][row].push(this.GetIndex(tileX, tileY));
+        }
     };
 
     AmTilemap.prototype.Clear = function (column, row) {
-        this.data[column][row] = new Array();
+        if (column >= 0 && row >= 0 && column < this.columns && row < this.rows)
+            this.data[column][row] = new Array();
+    };
+
+    AmTilemap.prototype.ClearRect = function (column, row, w, h) {
+        for (var i = Math.max(0, column); i < Math.min(this.columns, column + w); i++)
+            for (var j = Math.max(0, row); j < Math.min(this.rows, row + h); j++)
+                this.data[i][j] = new Array();
+    };
+
+    AmTilemap.prototype.ClearAll = function () {
+        for (var i = 0; i < this.columns; i++)
+            for (var j = 0; j < this.rows; j++)
+                this.data[i][j] = new Array();
     };
 
     AmTilemap.prototype.GetIndex = function (tileX, tileY) {
@@ -1091,7 +1108,8 @@ var AmHitgrid = (function (_super) {
         }
     }
     AmHitgrid.prototype.Set = function (x, y, solid) {
-        this.solids[x][y] = solid;
+        if (x >= 0 && y >= 0 && x < this.columns && y < this.rows)
+            this.solids[x][y] = solid;
     };
 
     AmHitgrid.prototype.SetRect = function (x, y, w, h, solid) {
@@ -1153,53 +1171,86 @@ var Terrain = (function (_super) {
 
         this.GenerateTiles();
     }
-    Terrain.prototype.GenerateTiles = function () {
-        for (var i = 0; i < this.collider.columns; i++) {
-            for (var j = 0; j < this.collider.rows; j++) {
-                if (this.collider.Get(i, j)) {
-                    var up = this.collider.Get(i, j - 1);
-                    var right = this.collider.Get(i + 1, j);
-                    var left = this.collider.Get(i - 1, j);
-                    var down = this.collider.Get(i, j + 1);
+    Terrain.prototype.Update = function () {
+        _super.prototype.Update.call(this);
 
-                    if (left && up && down && right) {
-                        this.tilemap.Set(i, j, 2, 2);
-                    } else if (left && !up && right && down) {
-                        this.tilemap.Set(i, j - 1, 2, 0);
-                        this.tilemap.Set(i, j, 2, 1);
-                    } else if (left && up && right && !down) {
-                        this.tilemap.Set(i, j, 2, 3);
-                        this.tilemap.Set(i, j + 1, 2, 4);
-                    } else if (!left && up && right && down) {
-                        this.tilemap.Set(i - 1, j, 0, 2);
-                        this.tilemap.Set(i, j, 1, 2);
-                    } else if (left && up && !right && down) {
-                        this.tilemap.Set(i, j, 3, 2);
-                        this.tilemap.Set(i + 1, j, 4, 2);
-                    } else if (!left && !up && right && down) {
-                        this.tilemap.Set(i - 1, j - 1, 0, 0);
-                        this.tilemap.Set(i, j - 1, 1, 0);
-                        this.tilemap.Set(i - 1, j, 0, 1);
-                        this.tilemap.Set(i, j, 1, 1);
-                    } else if (left && !up && !right && down) {
-                        this.tilemap.Set(i, j - 1, 3, 0);
-                        this.tilemap.Set(i + 1, j - 1, 4, 0);
-                        this.tilemap.Set(i, j, 3, 1);
-                        this.tilemap.Set(i + 1, j, 4, 1);
-                    } else if (!left && up && right && !down) {
-                        this.tilemap.Set(i - 1, j, 0, 3);
-                        this.tilemap.Set(i, j, 1, 3);
-                        this.tilemap.Set(i - 1, j + 1, 0, 4);
-                        this.tilemap.Set(i, j + 1, 1, 4);
-                    } else if (left && up && !right && !down) {
-                        this.tilemap.Set(i, j, 3, 3);
-                        this.tilemap.Set(i + 1, j, 4, 3);
-                        this.tilemap.Set(i, j + 1, 3, 4);
-                        this.tilemap.Set(i + 1, j, 4, 4);
-                    }
-                }
-            }
+        if (Am.mouse.leftPressed || Am.mouse.rightPressed) {
+            var point = new AmPoint(Math.floor(Am.mouse.X() / 8), Math.floor(Am.mouse.Y() / 8));
+            this.collider.Set(point.x, point.y, Am.mouse.leftPressed);
+
+            this.tilemap.ClearRect(point.x - 1, point.y - 1, 3, 3);
+            for (var i = -1; i < 2; i++)
+                for (var j = -1; j < 2; j++)
+                    this.GenerateTile(point.x + i, point.y + j);
         }
+    };
+
+    Terrain.prototype.GenerateTiles = function () {
+        for (var i = 0; i < this.collider.columns; i++)
+            for (var j = 0; j < this.collider.rows; j++)
+                this.GenerateTile(i, j);
+    };
+
+    Terrain.prototype.GenerateTile = function (x, y) {
+        var up = this.collider.Get(x, y - 1);
+        var right = this.collider.Get(x + 1, y);
+        var left = this.collider.Get(x - 1, y);
+        var down = this.collider.Get(x, y + 1);
+
+        if (this.collider.Get(x, y)) {
+            if (left && up && down && right) {
+                this.tilemap.Set(x, y, 2, 2);
+            } else if (left && !up && right && down) {
+                this.tilemap.Set(x, y, 2, 1);
+            } else if (left && up && right && !down) {
+                this.tilemap.Set(x, y, 2, 3);
+            } else if (!left && up && right && down) {
+                this.tilemap.Set(x, y, 1, 2);
+            } else if (left && up && !right && down) {
+                this.tilemap.Set(x, y, 3, 2);
+            } else if (!left && !up && right && down) {
+                this.tilemap.Set(x, y, 1, 1);
+            } else if (left && !up && !right && down) {
+                this.tilemap.Set(x, y, 3, 1);
+            } else if (!left && up && right && !down) {
+                this.tilemap.Set(x, y, 1, 3);
+            } else if (left && up && !right && !down) {
+                this.tilemap.Set(x, y, 3, 3);
+            } else if (!left && up && !right && down) {
+                this.tilemap.Set(x, y, 5, 2);
+            } else if (left && !up && right && !down) {
+                this.tilemap.Set(x, y, 2, 5);
+            } else if (!left && !up && !right && down) {
+                this.tilemap.Set(x, y, 5, 1);
+            } else if (!left && up && !right && !down) {
+                this.tilemap.Set(x, y, 5, 3);
+            } else if (!left && !up && right && !down) {
+                this.tilemap.Set(x, y, 1, 5);
+            } else if (left && !up && !right && !down) {
+                this.tilemap.Set(x, y, 3, 5);
+            } else if (!left && !up && !right && !down) {
+                this.tilemap.Set(x, y, 5, 5);
+            }
+        } else {
+            if (down)
+                this.tilemap.Set(x, y, 1 + Math.floor(Math.random() * 3), 0);
+            if (right)
+                this.tilemap.Set(x, y, 0, 1 + Math.floor(Math.random() * 3));
+            if (up)
+                this.tilemap.Set(x, y, 1 + Math.floor(Math.random() * 3), 4);
+            if (left)
+                this.tilemap.Set(x, y, 4, 1 + Math.floor(Math.random() * 3));
+        }
+    };
+
+    Terrain.prototype.Render = function () {
+        _super.prototype.Render.call(this);
+
+        Am.context.beginPath();
+        Am.context.rect(Math.floor(Am.mouse.X() / 8) * 8, Math.floor(Am.mouse.Y() / 8) * 8, 8, 8);
+        Am.context.lineWidth = 1;
+        Am.context.strokeStyle = '#ff0000';
+        Am.context.stroke();
     };
     return Terrain;
 })(AmEntity);
