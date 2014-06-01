@@ -500,42 +500,46 @@ var Ambient = (function () {
     };
 
     Ambient.prototype.Render = function () {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+         {
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.context.fillStyle = this.clear;
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.context.fillStyle = this.clear;
+            this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        Am.context.save();
-        Am.context.translate(-Math.floor(this.camera.x), -Math.floor(this.camera.y));
+            Am.context.save();
+            Am.context.translate(-Math.floor(this.camera.x), -Math.floor(this.camera.y));
 
-        if (!this.smoothing)
-            Am.DisableSmoothing(this.context);
+            if (!this.smoothing)
+                Am.DisableSmoothing(this.context);
 
-        if (this._scene != null)
-            this._scene.Render();
+            if (this._scene != null)
+                this._scene.Render();
 
-        Am.context.restore();
-
-        if (!this.smoothing)
-            this.DisableSmoothing(this.contextScaled);
-
-        this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
-
-        var scale = this.GetViewportScale();
-        var offset = this.GetViewportOffset();
-
-        var shift = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
-
-        this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
-
-        this.contextScaled.fillStyle = "#000000";
-        if (offset.x != 0) {
-            this.contextScaled.fillRect(0, 0, offset.x, this.canvasScaled.height);
-            this.contextScaled.fillRect(this.canvasScaled.width - offset.x, 0, offset.x, this.canvasScaled.height);
+            Am.context.restore();
         }
-        if (offset.y != 0) {
-            this.contextScaled.fillRect(0, 0, this.canvasScaled.width, offset.y);
-            this.contextScaled.fillRect(0, this.canvasScaled.height - offset.y, this.canvasScaled.width, offset.y);
+
+         {
+            if (!this.smoothing)
+                this.DisableSmoothing(this.contextScaled);
+
+            this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
+
+            var scale = this.GetViewportScale();
+            var offset = this.GetViewportOffset();
+
+            var shift = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
+
+            this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
+
+            this.contextScaled.fillStyle = "#000000";
+            if (offset.x != 0) {
+                this.contextScaled.fillRect(0, 0, offset.x, this.canvasScaled.height);
+                this.contextScaled.fillRect(this.canvasScaled.width - offset.x, 0, offset.x, this.canvasScaled.height);
+            }
+            if (offset.y != 0) {
+                this.contextScaled.fillRect(0, 0, this.canvasScaled.width, offset.y);
+                this.contextScaled.fillRect(0, this.canvasScaled.height - offset.y, this.canvasScaled.width, offset.y);
+            }
         }
     };
     return Ambient;
@@ -606,6 +610,10 @@ var AmEntity = (function () {
         this.visible = true;
         this.depth = 0;
         this.components = new Array();
+        this._tags = new Array();
+        this._totag = new Array();
+        this.id = (AmEntity.ID_TOTAL++);
+        this.Tag("all");
     }
     Object.defineProperty(AmEntity.prototype, "x", {
         get: function () {
@@ -630,12 +638,23 @@ var AmEntity = (function () {
     });
 
     AmEntity.prototype.Start = function () {
+        for (var i = 0; i < this._totag.length; i++) {
+            this._tags.push(this._totag[i]);
+            this.scene.AddEntityTag(this, this._totag[i]);
+        }
+        this._totag = new Array();
         for (var i = 0; i < this.components.length; i++) {
             this.components[i].entity = this;
             this.components[i].Start();
         }
     };
+
     AmEntity.prototype.End = function () {
+        for (var i = 0; i < this._tags.length; i++) {
+            this._totag.push(this._tags[i]);
+            this.scene.RemoveEntityTag(this, this._tags[i]);
+        }
+        this._tags = new Array();
     };
 
     AmEntity.prototype.Add = function (component) {
@@ -657,6 +676,33 @@ var AmEntity = (function () {
         component.entity = null;
     };
 
+    AmEntity.prototype.Tag = function (tag) {
+        if (this.scene != null) {
+            this._tags.push(tag);
+            this.scene.AddEntityTag(this, tag);
+        } else
+            this._totag.push(tag);
+    };
+
+    AmEntity.prototype.Untag = function (tag) {
+        if (this.scene != null) {
+            for (var i = 0; i < this._tags.length; i++) {
+                if (this._tags[i] == tag) {
+                    this._tags.splice(i, 1);
+                    this.scene.RemoveEntityTag(this, tag);
+                    break;
+                }
+            }
+        } else {
+            for (var i = 0; i < this._totag.length; i++) {
+                if (this._totag[i] == tag) {
+                    this._totag.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    };
+
     AmEntity.prototype.Update = function () {
         for (var i = 0; i < this.components.length; i++) {
             if (this.components[i].active)
@@ -670,6 +716,7 @@ var AmEntity = (function () {
                 this.components[i].Render();
         }
     };
+    AmEntity.ID_TOTAL = 0;
     return AmEntity;
 })();
 var __extends = this.__extends || function (d, b) {
@@ -768,6 +815,7 @@ var AmScene = (function () {
         this.adding = new Array();
         this.removing = new Array();
         this.colliders = {};
+        this.taggedEntities = {};
     }
     AmScene.prototype.Start = function () {
     };
@@ -803,6 +851,52 @@ var AmScene = (function () {
                 this.colliders[next] = new Array();
             this.colliders[next].push(collider);
         }
+    };
+
+    AmScene.prototype.AddEntityTag = function (entity, tag) {
+        if (this.taggedEntities[tag] == null)
+            this.taggedEntities[tag] = new Array();
+        this.taggedEntities[tag].push(entity);
+    };
+
+    AmScene.prototype.RemoveEntityTag = function (entity, tag) {
+        var list = this.taggedEntities[tag];
+        for (var i = 0; i < list.length; i++) {
+            if (list[i] == entity) {
+                list.splice(i, 1);
+                break;
+            }
+        }
+        this.taggedEntities[tag] = list;
+    };
+
+    AmScene.prototype.GetEntitiesByTag = function (tag) {
+        if (this.taggedEntities[tag] != null)
+            return this.taggedEntities[tag];
+        return new Array();
+    };
+
+    AmScene.prototype.GetEntitiesByTags = function () {
+        var tags = [];
+        for (var _i = 0; _i < (arguments.length - 0); _i++) {
+            tags[_i] = arguments[_i + 0];
+        }
+        var added = {};
+        var list = new Array();
+        for (var i = 0; i < tags.length; i++) {
+            var tag = tags[i];
+            var entities = this.taggedEntities[tag];
+            if (entities != null) {
+                for (var j = 0; j < entities.length; j++) {
+                    var entity = entities[j];
+                    if (added[entity.id] != true) {
+                        added[entity.id] = true;
+                        list.push(entity);
+                    }
+                }
+            }
+        }
+        return list;
     };
 
     AmScene.prototype.Update = function () {
@@ -1079,7 +1173,7 @@ var Creature = (function (_super) {
         this.movementRemainder = new AmPoint(0, 0);
         this.position = new AmPoint(80, 60);
 
-        this.collider = new AmHitbox(-4, -8, 8, 8);
+        this.collider = new AmHitbox(-3, -8, 6, 8);
         this.Add(this.collider);
 
         this.sprite = new AmAnimator(assets.textures["player"], 16, 16);
@@ -1335,7 +1429,7 @@ var Terrain = (function (_super) {
         this.collider.SetRect(0, 0, 40, 2, true);
         this.collider.SetRect(0, 13, 40, 2, true);
         this.collider.SetRect(38, 0, 2, 15, true);
-        this.collider.SetRect(8, 10, 4, 15, true);
+        this.collider.SetRect(8, 10, 5, 15, true);
         this.collider.SetRect(16, 7, 5, 4, true);
 
         this.Add(this.tilemap);

@@ -22,7 +22,7 @@ class Terrain extends AmEntity
         this.collider.SetRect(0, 0, 40, 2, true);
         this.collider.SetRect(0, 13, 40, 2, true);
         this.collider.SetRect(38, 0, 2, 15, true);
-        this.collider.SetRect(8, 10, 4, 15, true);
+        this.collider.SetRect(8, 10, 5, 15, true);
         this.collider.SetRect(16, 7, 5, 4, true);
 
         this.Add(this.tilemap);

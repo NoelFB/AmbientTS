@@ -27,7 +27,7 @@ class Creature extends AmEntity
         super();
         this.position = new AmPoint(80, 60);
 
-        this.collider = new AmHitbox(-4, -8, 8, 8);
+        this.collider = new AmHitbox(-3, -8, 6, 8);
         this.Add(this.collider);
 
         this.sprite = new AmAnimator(assets.textures["player"], 16, 16);
