@@ -4,6 +4,7 @@
 /// <reference path="../../ambient/colliders/AmHitbox.ts"/>
 /// <reference path="../../ambient/graphics/AmAnimator.ts"/>
 /// <reference path="Main.ts"/>
+/// <reference path="Smoke.ts"/>
 
 class Creature extends AmEntity
 {
@@ -181,6 +182,7 @@ class Creature extends AmEntity
                 {
                 	if (this.speed.y > 10)
                 	{
+                		Smoke.Burst(this.x, this.y, 4, 4);
                 		this.sprite.scale.x = 1.25;
                 		this.sprite.scale.y = 0.75;
                 	}

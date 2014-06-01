@@ -899,7 +899,7 @@ var AmScene = (function () {
         for (var i = 0; i < this.removing.length; i++) {
             for (var j = 0; j < this.entities.length; j++) {
                 if (this.entities[j] == this.removing[i]) {
-                    this.entities.splice(i, 1);
+                    this.entities.splice(j, 1);
                     break;
                 }
             }
@@ -1154,6 +1154,54 @@ var AmAnimator = (function (_super) {
     };
     return AmAnimator;
 })(AmGraphic);
+var Smoke = (function (_super) {
+    __extends(Smoke, _super);
+    function Smoke() {
+        _super.call(this);
+    }
+    Smoke.prototype.Define = function (x, y) {
+        this.x = x;
+        this.y = y;
+        this.timer = 1;
+        this.size = 2 + Math.ceil(Math.random() * 2);
+        this.speed = new AmPoint(-8 + Math.random() * 16, -8 + Math.random() * 16);
+        this.color = Math.random() < 0.5 ? "#dddddd" : "#eeeeee";
+    };
+
+    Smoke.prototype.Update = function () {
+        this.timer -= Am.deltaTime;
+        if (this.timer <= 0) {
+            Am.scene.Remove(this);
+            Smoke.cache.push(this);
+        } else {
+            this.x += this.speed.x * Am.deltaTime;
+            this.y += this.speed.y * Am.deltaTime;
+        }
+    };
+
+    Smoke.prototype.Render = function () {
+        var size = Math.ceil(this.size * this.timer);
+        Am.context.fillStyle = this.color;
+        Am.context.fillRect(Math.round(this.x - size / 2), Math.round(this.y - size / 2), size, size);
+    };
+
+    Smoke.Burst = function (x, y, range, count) {
+        for (var i = 0; i < count; i++) {
+            var smoke;
+            if (Smoke.cache.length > 0) {
+                smoke = Smoke.cache[0];
+                Smoke.cache.splice(0, 1);
+            } else {
+                smoke = new Smoke();
+            }
+
+            smoke.Define(x - range + Math.random() * range * 2, y - range + Math.random() * range * 2);
+            Am.scene.Add(smoke);
+        }
+    };
+    Smoke.cache = new Array();
+    return Smoke;
+})(AmEntity);
 var Creature = (function (_super) {
     __extends(Creature, _super);
     function Creature() {
@@ -1290,6 +1338,7 @@ var Creature = (function (_super) {
                     moveBy -= step;
                 } else {
                     if (this.speed.y > 10) {
+                        Smoke.Burst(this.x, this.y, 4, 4);
                         this.sprite.scale.x = 1.25;
                         this.sprite.scale.y = 0.75;
                     }
