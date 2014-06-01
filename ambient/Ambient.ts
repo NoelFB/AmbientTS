@@ -11,11 +11,12 @@ class Ambient
     public name:string;
     public width:number;
     public height:number;
-    public scale:number = 1;
     public fps:number;
     public deltaTime:number;
     public camera:AmPoint = new AmPoint(0, 0);
     public clear:string = "#0e2129";
+    public keepPixelScale:boolean = false;
+    public container:any;
 
     // the main canvas to draw to
     public canvas:any;
@@ -29,9 +30,15 @@ class Ambient
     public mouse:AmMouse;
     public keyboard:AmKeyboard;
 
+    // current game scale (when not full-screen)
+    private _scale:number = 1;
+
     // current scene, and the next scene to go to
     private _scene:AmScene = null;
     private _goto:AmScene = null;
+
+    // is fullscreen
+    private _fullscreen:boolean = false;
 
     // time, used for deltaTime
     private _date:number;
@@ -46,9 +53,9 @@ class Ambient
         this.name = name;
         this.width = width;
         this.height = height;
-        this.scale = scale;
         this.fps = fps;
         this.deltaTime = fps / 1000;
+        this._scale = scale;
     }
 
     public Run()
@@ -60,27 +67,27 @@ class Ambient
             document.body.style.backgroundColor = "#222";
 
             // create the container ... can ignore this later, maybe
-            var container = document.createElement("div");
-            document.body.appendChild(container);
-            container.style.width = (this.width * this.scale) + "px";
-            container.style.height = (this.height * this.scale) + "px";
-            container.style.margin = "auto";
-            container.style.marginTop = "80px";
-            container.style.boxShadow = "0px 0px 128px #444";
-            container.style.border = "1px solid #222";
+            this.container = document.createElement("div");
+            this.container.style.width = (this.width * this.scale) + "px";
+            this.container.style.height = (this.height * this.scale) + "px";
+            this.container.style.margin = "auto";
+            this.container.style.marginTop = "80px";
+            this.container.style.boxShadow = "0px 0px 128px #444";
+            this.container.style.border = "1px solid #222";
+            document.body.appendChild(this.container);
 
             // create the visible canvas
             this.canvasScaled = document.createElement("canvas");
             this.canvasScaled.width = this.width * this.scale;
             this.canvasScaled.height = this.height * this.scale;
-            container.appendChild(this.canvasScaled);
+            this.container.appendChild(this.canvasScaled);
 
             // create the invisible buffer canvas
             this.canvas = document.createElement("canvas");
             this.canvas.width = this.width;
             this.canvas.height = this.height;
             this.canvas.style.display = "none";
-            container.appendChild(this.canvas);
+            this.container.appendChild(this.canvas);
 
             // get context
             this.contextScaled = this.canvasScaled.getContext("2d");
@@ -99,6 +106,16 @@ class Ambient
             // start loop
             this._date = (new Date()).getTime();
             setInterval(() => this.Loop(), 1000 / this.fps);
+
+            // on window resize
+            window.onresize = () =>
+            {
+                if (this._fullscreen)
+                {
+                    this.canvasScaled.width = document.documentElement.clientWidth;
+                    this.canvasScaled.height = document.documentElement.clientHeight;
+                }
+            }
         }
     }
 
@@ -112,6 +129,57 @@ class Ambient
     public set scene(value:AmScene)
     {
         this._goto = value;
+    }
+
+    public get scale():number
+    {
+        return this._scale;
+    }
+
+    public set scale(value:number)
+    {
+        this._scale = value;
+        this.container.style.width = (this.width * this._scale) + "px";
+        this.container.style.height = (this.height * this._scale) + "px";
+        if (!this._fullscreen)
+        {
+            this.canvasScaled.width = this.width * this._scale;
+            this.canvasScaled.height = this.height * this._scale;
+        }
+    }
+
+    public ToggleFullscreen()
+    {
+        if  (this._fullscreen)
+        {
+            this.canvasScaled.style.position = "relative";
+            this.canvasScaled.width = this.width * this.scale;
+            this.canvasScaled.height = this.height * this.scale;
+        }
+        else
+        {
+            this.canvasScaled.style.position = "absolute";
+            this.canvasScaled.style.left = "0px";
+            this.canvasScaled.style.top = "0px";
+            this.canvasScaled.width = document.documentElement.clientWidth;
+            this.canvasScaled.height = document.documentElement.clientHeight;
+        }
+
+        this._fullscreen = !this._fullscreen;
+    }
+
+    public GetViewportScale():number
+    {
+        var scale = Math.min(this.canvasScaled.width / this.width, this.canvasScaled.height / this.height);
+        if (this.keepPixelScale)
+            scale = Math.floor(scale);
+        return scale;
+    }
+
+    public GetViewportOffset():AmPoint
+    {
+        var scale:number = this.GetViewportScale();
+        return new AmPoint((this.canvasScaled.width - this.width * scale) / 2, (this.canvasScaled.height - this.height * scale) / 2);
     }
 
     private Loop()
@@ -172,8 +240,14 @@ class Ambient
         this.contextScaled.msImageSmoothingEnabled = false;
         this.contextScaled.webkitImageSmoothingEnabled = false;
         this.contextScaled.mozImageSmoothingEnabled = false;
-        this.contextScaled.clearRect(0, 0, this.width * this.scale, this.height * this.scale);
-        this.contextScaled.drawImage(this.canvas, 0, 0, this.width * this.scale, this.height * this.scale);
+        this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
+        this.contextScaled.fillStyle = "#000000";
+        this.contextScaled.fillRect(0, 0, this.canvasScaled.width, this.canvasScaled.height)
+
+        // draw game into scaled canvas
+        var scale:number = this.GetViewportScale();
+        var offset:AmPoint = this.GetViewportOffset();
+        this.contextScaled.drawImage(this.canvas, offset.x, offset.y, this.width * scale, this.height * scale);
     }
 }
 

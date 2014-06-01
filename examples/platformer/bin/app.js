@@ -140,7 +140,9 @@ var AmMouse = (function () {
         this.canvas = canvas;
 
         this.canvas.onmousemove = function (e) {
-            _this.position = new AmPoint(e.offsetX / Am.scale + Am.camera.x, e.offsetY / Am.scale + Am.camera.y);
+            var viewScale = Am.GetViewportScale();
+            var viewOffset = Am.GetViewportOffset();
+            _this.position = new AmPoint((e.offsetX - viewOffset.x) / viewScale + Am.camera.x, (e.offsetY - viewOffset.y) / viewScale + Am.camera.y);
         };
 
         this.canvas.onmousedown = function (e) {
@@ -313,20 +315,22 @@ var AmKey = (function () {
 })();
 var Ambient = (function () {
     function Ambient(name, width, height, scale, fps) {
-        this.scale = 1;
         this.camera = new AmPoint(0, 0);
         this.clear = "#0e2129";
+        this.keepPixelScale = false;
+        this._scale = 1;
         this._scene = null;
         this._goto = null;
+        this._fullscreen = false;
         Ambient.instance = this;
         Am = this;
 
         this.name = name;
         this.width = width;
         this.height = height;
-        this.scale = scale;
         this.fps = fps;
         this.deltaTime = fps / 1000;
+        this._scale = scale;
     }
     Ambient.prototype.Run = function () {
         var _this = this;
@@ -334,25 +338,25 @@ var Ambient = (function () {
             document.head.title = _this.name + " :: Ambient TS";
             document.body.style.backgroundColor = "#222";
 
-            var container = document.createElement("div");
-            document.body.appendChild(container);
-            container.style.width = (_this.width * _this.scale) + "px";
-            container.style.height = (_this.height * _this.scale) + "px";
-            container.style.margin = "auto";
-            container.style.marginTop = "80px";
-            container.style.boxShadow = "0px 0px 128px #444";
-            container.style.border = "1px solid #222";
+            _this.container = document.createElement("div");
+            _this.container.style.width = (_this.width * _this.scale) + "px";
+            _this.container.style.height = (_this.height * _this.scale) + "px";
+            _this.container.style.margin = "auto";
+            _this.container.style.marginTop = "80px";
+            _this.container.style.boxShadow = "0px 0px 128px #444";
+            _this.container.style.border = "1px solid #222";
+            document.body.appendChild(_this.container);
 
             _this.canvasScaled = document.createElement("canvas");
             _this.canvasScaled.width = _this.width * _this.scale;
             _this.canvasScaled.height = _this.height * _this.scale;
-            container.appendChild(_this.canvasScaled);
+            _this.container.appendChild(_this.canvasScaled);
 
             _this.canvas = document.createElement("canvas");
             _this.canvas.width = _this.width;
             _this.canvas.height = _this.height;
             _this.canvas.style.display = "none";
-            container.appendChild(_this.canvas);
+            _this.container.appendChild(_this.canvas);
 
             _this.contextScaled = _this.canvasScaled.getContext("2d");
             _this.context = _this.canvas.getContext("2d");
@@ -368,6 +372,13 @@ var Ambient = (function () {
             setInterval(function () {
                 return _this.Loop();
             }, 1000 / _this.fps);
+
+            window.onresize = function () {
+                if (_this._fullscreen) {
+                    _this.canvasScaled.width = document.documentElement.clientWidth;
+                    _this.canvasScaled.height = document.documentElement.clientHeight;
+                }
+            };
         };
     };
 
@@ -384,6 +395,52 @@ var Ambient = (function () {
         configurable: true
     });
 
+
+    Object.defineProperty(Ambient.prototype, "scale", {
+        get: function () {
+            return this._scale;
+        },
+        set: function (value) {
+            this._scale = value;
+            this.container.style.width = (this.width * this._scale) + "px";
+            this.container.style.height = (this.height * this._scale) + "px";
+            if (!this._fullscreen) {
+                this.canvasScaled.width = this.width * this._scale;
+                this.canvasScaled.height = this.height * this._scale;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+
+    Ambient.prototype.ToggleFullscreen = function () {
+        if (this._fullscreen) {
+            this.canvasScaled.style.position = "relative";
+            this.canvasScaled.width = this.width * this.scale;
+            this.canvasScaled.height = this.height * this.scale;
+        } else {
+            this.canvasScaled.style.position = "absolute";
+            this.canvasScaled.style.left = "0px";
+            this.canvasScaled.style.top = "0px";
+            this.canvasScaled.width = document.documentElement.clientWidth;
+            this.canvasScaled.height = document.documentElement.clientHeight;
+        }
+
+        this._fullscreen = !this._fullscreen;
+    };
+
+    Ambient.prototype.GetViewportScale = function () {
+        var scale = Math.min(this.canvasScaled.width / this.width, this.canvasScaled.height / this.height);
+        if (this.keepPixelScale)
+            scale = Math.floor(scale);
+        return scale;
+    };
+
+    Ambient.prototype.GetViewportOffset = function () {
+        var scale = this.GetViewportScale();
+        return new AmPoint((this.canvasScaled.width - this.width * scale) / 2, (this.canvasScaled.height - this.height * scale) / 2);
+    };
 
     Ambient.prototype.Loop = function () {
         var time = (new Date()).getTime();
@@ -428,8 +485,13 @@ var Ambient = (function () {
         this.contextScaled.msImageSmoothingEnabled = false;
         this.contextScaled.webkitImageSmoothingEnabled = false;
         this.contextScaled.mozImageSmoothingEnabled = false;
-        this.contextScaled.clearRect(0, 0, this.width * this.scale, this.height * this.scale);
-        this.contextScaled.drawImage(this.canvas, 0, 0, this.width * this.scale, this.height * this.scale);
+        this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
+        this.contextScaled.fillStyle = "#000000";
+        this.contextScaled.fillRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
+
+        var scale = this.GetViewportScale();
+        var offset = this.GetViewportOffset();
+        this.contextScaled.drawImage(this.canvas, offset.x, offset.y, this.width * scale, this.height * scale);
     };
     return Ambient;
 })();
@@ -1040,6 +1102,11 @@ var Creature = (function (_super) {
             Am.camera.x = 0;
         if (Am.camera.x + Am.width > 40 * 8)
             Am.camera.x = 40 * 8 - Am.width;
+
+        if (Am.keyboard.Pressed(AmKey.F))
+            Am.ToggleFullscreen();
+        if (Am.keyboard.Pressed(AmKey.P))
+            Am.keepPixelScale = !Am.keepPixelScale;
     };
 
     Creature.prototype.MoveX = function (amount) {

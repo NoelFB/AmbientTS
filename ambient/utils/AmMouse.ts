@@ -26,7 +26,9 @@ class AmMouse
 
         this.canvas.onmousemove = (e:MouseEvent) =>
         {
-            this.position = new AmPoint(e.offsetX / Am.scale + Am.camera.x, e.offsetY / Am.scale + Am.camera.y);
+            var viewScale = Am.GetViewportScale();
+            var viewOffset:AmPoint = Am.GetViewportOffset();
+            this.position = new AmPoint((e.offsetX - viewOffset.x) / viewScale + Am.camera.x, (e.offsetY - viewOffset.y) / viewScale + Am.camera.y);
         }
 
         this.canvas.onmousedown = (e:MouseEvent) =>

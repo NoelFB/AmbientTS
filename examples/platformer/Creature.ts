@@ -46,8 +46,10 @@ class Creature extends AmEntity
     {
         super.Update();
 
+        // get input direction
         var axis:number = (Am.keyboard.Down(AmKey.LEFT) ? -1 : (Am.keyboard.Down(AmKey.RIGHT) ? 1 : 0));
 
+        // update facing & sprite scale
         if (axis != 0)
             this.facing = axis;
         this.sprite.scale.x = this.facing;
@@ -104,12 +106,18 @@ class Creature extends AmEntity
         else
             this.sprite.Play("jump", false);
 
+        // move camera
         Am.camera.x = this.position.x - Am.width / 2;
         if (Am.camera.x < 0)
             Am.camera.x = 0;
         if (Am.camera.x + Am.width > 40 * 8)
             Am.camera.x = 40 * 8 - Am.width;
 
+        // toggle fullscreen & pixel clamping
+        if (Am.keyboard.Pressed(AmKey.F))
+            Am.ToggleFullscreen();
+        if  (Am.keyboard.Pressed(AmKey.P))
+            Am.keepPixelScale = !Am.keepPixelScale;
     }
 
     public MoveX(amount:number)
