@@ -132,7 +132,7 @@ class AmScene
             {
                 if (this.entities[j] == this.removing[i])
                 {
-                    this.entities.splice(i, 1);
+                    this.entities.splice(j, 1);
                     break;
                 }
             }
