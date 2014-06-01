@@ -227,56 +227,62 @@ class Ambient
 
     public Render()
     {
-        // clear
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // background
-        this.context.fillStyle = this.clear;
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-        // set up camera translation
-        Am.context.save();
-        Am.context.translate(-Math.floor(this.camera.x), -Math.floor(this.camera.y));
-
-        // smooth main canvas
-        if (!this.smoothing)
-            Am.DisableSmoothing(this.context);
-
-        // draw scene
-        if (this._scene != null)
-            this._scene.Render();
-
-        // restore translations
-        Am.context.restore();
-
-        // scale up to output (scaled canvas)
-        if (!this.smoothing)
-            this.DisableSmoothing(this.contextScaled);
-
-        this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
-
-        // get the app scale and viewport offset
-        var scale:number = this.GetViewportScale();
-        var offset:AmPoint = this.GetViewportOffset();
-
-        // if snap camera to pixels is false, let us move the camera at "subpixels" 
-        // (ex say the app is scaled to 4, the camera can then offset 0, 0.25, 0.50, 0.75). creates smoother movement
-        var shift:AmPoint = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
-        
-        // draw the app to the visible canvas
-        this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
-
-        // draw outside the viewport
-        this.contextScaled.fillStyle = "#000000";
-        if (offset.x != 0)
+        // draw main buffer
         {
-            this.contextScaled.fillRect(0, 0, offset.x, this.canvasScaled.height);
-            this.contextScaled.fillRect(this.canvasScaled.width - offset.x, 0, offset.x, this.canvasScaled.height);
+            // clear
+            this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // background
+            this.context.fillStyle = this.clear;
+            this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // set up camera translation
+            Am.context.save();
+            Am.context.translate(-Math.floor(this.camera.x), -Math.floor(this.camera.y));
+
+            // smooth main canvas
+            if (!this.smoothing)
+                Am.DisableSmoothing(this.context);
+
+            // draw scene
+            if (this._scene != null)
+                this._scene.Render();
+
+            // restore translations
+            Am.context.restore();
         }
-        if (offset.y != 0)
+
+        // draw buffer to visible canvas (scaled up)
         {
-            this.contextScaled.fillRect(0, 0, this.canvasScaled.width, offset.y);
-            this.contextScaled.fillRect(0, this.canvasScaled.height - offset.y, this.canvasScaled.width, offset.y);
+            // scale up to output (scaled canvas)
+            if (!this.smoothing)
+                this.DisableSmoothing(this.contextScaled);
+
+            this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
+
+            // get the app scale and viewport offset
+            var scale:number = this.GetViewportScale();
+            var offset:AmPoint = this.GetViewportOffset();
+
+            // if snap camera to pixels is false, let us move the camera at "subpixels" 
+            // (ex say the app is scaled to 4, the camera can then offset 0, 0.25, 0.50, 0.75). creates smoother movement
+            var shift:AmPoint = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
+            
+            // draw the app to the visible canvas
+            this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
+
+            // draw outside the viewport
+            this.contextScaled.fillStyle = "#000000";
+            if (offset.x != 0)
+            {
+                this.contextScaled.fillRect(0, 0, offset.x, this.canvasScaled.height);
+                this.contextScaled.fillRect(this.canvasScaled.width - offset.x, 0, offset.x, this.canvasScaled.height);
+            }
+            if (offset.y != 0)
+            {
+                this.contextScaled.fillRect(0, 0, this.canvasScaled.width, offset.y);
+                this.contextScaled.fillRect(0, this.canvasScaled.height - offset.y, this.canvasScaled.width, offset.y);
+            }
         }
     }
 }

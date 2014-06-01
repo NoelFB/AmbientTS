@@ -1,4 +1,5 @@
 /// <reference path="AmEntity.ts"/>
+/// <reference path="utils/AmDictionary.ts"/>
 /// <reference path="colliders/AmCollider.ts"/>
 
 class AmScene
@@ -9,7 +10,13 @@ class AmScene
     private removing:Array<AmEntity> = new Array<AmEntity>();
 
     // dictionary of list of colliders by tag
-    public colliders:{ [tag:string]:Array<AmCollider>; } = {};
+    public colliders:AmDictionary<Array<AmCollider>> = {};
+
+    // list of entities by tag
+    public taggedEntities:AmDictionary<Array<AmEntity>> = {};
+
+    // instance counter to give every entity an individual ID
+    private _entityInstanceId:number = 0;
 
     constructor()
     {
@@ -28,6 +35,7 @@ class AmScene
 
     public Add(entity:AmEntity):AmEntity
     {
+        entity.id = (this._entityInstanceId++);
         this.adding.push(entity);
         return entity;
     }
@@ -61,6 +69,58 @@ class AmScene
                 this.colliders[next] = new Array<AmCollider>();
             this.colliders[next].push(collider);
         }
+    }
+
+    public AddEntityTag(entity:AmEntity, tag:string)
+    {
+        if (this.taggedEntities[tag] == null)
+            this.taggedEntities[tag] = new Array<AmEntity>();
+        this.taggedEntities[tag].push(entity);
+    }
+
+    public RemoveEntityTag(entity:AmEntity, tag:string)
+    {
+        var list:Array<AmEntity> = this.taggedEntities[tag];
+        for (var i = 0; i < list.length; i ++)
+        {
+            if (list[i] == entity)
+            {
+                list.splice(i, 1);
+                break;
+            }
+        }
+        this.taggedEntities[tag] = list;
+    }
+
+    public GetEntitiesByTag(tag:string):Array<AmEntity>
+    {
+        if (this.taggedEntities[tag] != null)
+            return this.taggedEntities[tag];
+        return new Array<AmEntity>();
+    }
+
+    public GetEntitiesByTags(tags:Array<string>):Array<AmEntity>
+    {
+        var added:{ [key: number]: boolean; } = {};
+        var list:Array<AmEntity> = new Array<AmEntity>();
+        for (var i = 0; i < tags.length; i ++)
+        {
+            var tag:string = tags[i];
+            var entities:Array<AmEntity> = this.taggedEntities[tag];
+            if (entities != null)
+            {
+                for (var j = 0; j < entities.length; j ++)
+                {
+                    var entity = entities[j];
+                    if (added[entity.id] != true)
+                    {
+                        added[entity.id] = true;
+                        list.push(entity);
+                    }
+                }
+            }
+        }
+        return list;
     }
 
     public Update()
