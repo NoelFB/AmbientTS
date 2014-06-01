@@ -106,7 +106,7 @@ class Creature extends AmEntity
             this.sprite.Play("jump", false);
 
         // move camera
-        Am.camera.x = this.position.x - Am.width / 2;
+        Am.camera.x += (this.position.x - Am.width / 2 - Am.camera.x) / 10;
         if (Am.camera.x < 0)
             Am.camera.x = 0;
         if (Am.camera.x + Am.width > 40 * 8)

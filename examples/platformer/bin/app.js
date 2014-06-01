@@ -341,6 +341,7 @@ var Ambient = (function () {
         this.camera = new AmPoint(0, 0);
         this.clear = "#0e2129";
         this.keepPixelScale = false;
+        this.snapCameraToPixels = false;
         this.smoothing = false;
         this._scale = 1;
         this._scene = null;
@@ -377,8 +378,8 @@ var Ambient = (function () {
             _this.container.appendChild(_this.canvasScaled);
 
             _this.canvas = document.createElement("canvas");
-            _this.canvas.width = _this.width;
-            _this.canvas.height = _this.height;
+            _this.canvas.width = _this.width + 2;
+            _this.canvas.height = _this.height + 2;
             _this.canvas.style.display = "none";
             _this.container.appendChild(_this.canvas);
 
@@ -499,13 +500,13 @@ var Ambient = (function () {
     };
 
     Ambient.prototype.Render = function () {
-        this.context.clearRect(0, 0, this.width, this.height);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.context.fillStyle = this.clear;
-        this.context.fillRect(0, 0, this.width, this.height);
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         Am.context.save();
-        Am.context.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
+        Am.context.translate(-Math.floor(this.camera.x), -Math.floor(this.camera.y));
 
         if (!this.smoothing)
             Am.DisableSmoothing(this.context);
@@ -519,12 +520,23 @@ var Ambient = (function () {
             this.DisableSmoothing(this.contextScaled);
 
         this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
-        this.contextScaled.fillStyle = "#000000";
-        this.contextScaled.fillRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
 
         var scale = this.GetViewportScale();
         var offset = this.GetViewportOffset();
-        this.contextScaled.drawImage(this.canvas, offset.x, offset.y, this.width * scale, this.height * scale);
+
+        var shift = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
+
+        this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
+
+        this.contextScaled.fillStyle = "#000000";
+        if (offset.x != 0) {
+            this.contextScaled.fillRect(0, 0, offset.x, this.canvasScaled.height);
+            this.contextScaled.fillRect(this.canvasScaled.width - offset.x, 0, offset.x, this.canvasScaled.height);
+        }
+        if (offset.y != 0) {
+            this.contextScaled.fillRect(0, 0, this.canvasScaled.width, offset.y);
+            this.contextScaled.fillRect(0, this.canvasScaled.height - offset.y, this.canvasScaled.width, offset.y);
+        }
     };
     return Ambient;
 })();
@@ -1129,7 +1141,7 @@ var Creature = (function (_super) {
         } else
             this.sprite.Play("jump", false);
 
-        Am.camera.x = this.position.x - Am.width / 2;
+        Am.camera.x += (this.position.x - Am.width / 2 - Am.camera.x) / 10;
         if (Am.camera.x < 0)
             Am.camera.x = 0;
         if (Am.camera.x + Am.width > 40 * 8)
