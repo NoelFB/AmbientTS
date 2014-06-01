@@ -1,17 +1,14 @@
 /// <reference path="../../ambient/Ambient.ts"/>
-/// <reference path="../../ambient/AmEntity.ts"/>
+/// <reference path="../../ambient/AmActor.ts"/>
 /// <reference path="../../ambient/utils/AmKeyboard.ts"/>
 /// <reference path="../../ambient/colliders/AmHitbox.ts"/>
 /// <reference path="../../ambient/graphics/AmAnimator.ts"/>
 /// <reference path="Main.ts"/>
 /// <reference path="Smoke.ts"/>
 
-class Creature extends AmEntity
+class Creature extends AmActor
 {
-
-    public collider:AmHitbox;
     public sprite:AmAnimator;
-    public speed:AmPoint = new AmPoint(0, 0);
     public facing:number = 1;
 
     public accel:number = 240;
@@ -21,16 +18,15 @@ class Creature extends AmEntity
     public jumpForce:number = 120;
     public maxspeed:AmPoint = new AmPoint(48, 224);
 
-    public movementRemainder:AmPoint = new AmPoint(0, 0);
-
     constructor()
     {
-        super();
+    	// actor constructor
+        super(new AmHitbox(-3, -8, 6, 8));
+
+        // set position
         this.position = new AmPoint(80, 60);
 
-        this.collider = new AmHitbox(-3, -8, 6, 8);
-        this.Add(this.collider);
-
+        // set sprite
         this.sprite = new AmAnimator(assets.textures["player"], 16, 16);
         this.sprite.Add("idle", [0], 0);
         this.sprite.Add("run", [0, 1, 0, 2], 10);
@@ -40,6 +36,7 @@ class Creature extends AmEntity
         this.sprite.origin.y = 16;
         this.Add(this.sprite);
 
+        // graphic depth
         this.depth = 5;
     }
 
@@ -55,28 +52,19 @@ class Creature extends AmEntity
             this.facing = axis;
 
         // accelerate
-        this.speed.x += axis * this.accel * Am.deltaTime;
+        this.Accelerate(axis * this.accel, 0);
 
         // friction
         if (axis == 0)
-        {
-            var friction = this.frictionAir;
-            if (this.collider.Check("solid", 0, 1))
-                friction = this.frictionGround;
-
-            var sign = this.Sign(this.speed.x);
-            this.speed.x -= sign * friction * Am.deltaTime;
-            if (this.Sign(this.speed.x) != sign)
-                this.speed.x = 0;
-        }
+        	this.Friction(this.collider.Check("solid", 0, 1) ? this.frictionGround : this.frictionAir, 0);
 
         // gravity
         if (!this.collider.Check("solid", 0, 1))
         {
             if (Am.keyboard.Down(AmKey.UP) && Math.abs(this.speed.y) < 60)
-                this.speed.y += this.gravity / 2 * Am.deltaTime;
+            	this.Accelerate(0, this.gravity / 2);
             else
-                this.speed.y += this.gravity * Am.deltaTime;
+                this.Accelerate(0, this.gravity);
         }
 
         // jump
@@ -86,14 +74,10 @@ class Creature extends AmEntity
         }
 
         // clamp maxspeed
-        if (Math.abs(this.speed.x) > this.maxspeed.x)
-            this.speed.x = this.Sign(this.speed.x) * this.maxspeed.x;
-        if (Math.abs(this.speed.y) > this.maxspeed.y)
-            this.speed.y = this.Sign(this.speed.y) * this.maxspeed.y;
+        this.Maxspeed(this.maxspeed.x, this.maxspeed.y);
 
         // move
-        this.MoveX(this.speed.x * Am.deltaTime);
-        this.MoveY(this.speed.y * Am.deltaTime);
+        this.Move();
 
         // sprite
         if (this.collider.Check("solid", 0, 1))
@@ -119,83 +103,29 @@ class Creature extends AmEntity
         if  (Am.keyboard.Pressed(AmKey.P))
             Am.keepPixelScale = !Am.keepPixelScale;
 
-        // scale Y
+        // scale Y back
         if (this.sprite.scale.y < 1)
         	this.sprite.scale.y += Am.deltaTime * 2;
         else
         	this.sprite.scale.y = 1;
 
-        // scale X
+        // scale X back
         this.sprite.scale.x = this.facing * Math.abs(this.sprite.scale.x);
         if (Math.abs(this.sprite.scale.x) > 1)
         	this.sprite.scale.x -= this.facing * Am.deltaTime * 2;
 		else
-			this.sprite.scale.x = this.facing;        	
+			this.sprite.scale.x = this.facing;
     }
 
-    public MoveX(amount:number)
+    public OnCollideY()
     {
-        amount += this.movementRemainder.x;
-        this.movementRemainder.x = amount % 1;
-        var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
-
-        if (this.collider == null)
-            this.position.x += moveBy;
-        else
-        {
-            var step = this.Sign(moveBy);
-            while (moveBy != 0)
-            {
-                if (!this.collider.Check("solid", step, 0))
-                {
-                    this.position.x += step;
-                    moveBy -= step;
-                }
-                else
-                {
-                    this.speed.x = 0;
-                    break;
-                }
-            }
-        }
-    }
-
-    public MoveY(amount:number)
-    {
-        amount += this.movementRemainder.y;
-        this.movementRemainder.y = amount % 1;
-        var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
-
-        if (this.collider == null)
-            this.position.y += moveBy;
-        else
-        {
-            var step = this.Sign(moveBy);
-            while (moveBy != 0)
-            {
-                if (!this.collider.Check("solid", 0, step))
-                {
-                    this.position.y += step;
-                    moveBy -= step;
-                }
-                else
-                {
-                	if (this.speed.y > 10)
-                	{
-                		Smoke.Burst(this.x, this.y, 4, 4);
-                		this.sprite.scale.x = 1.25;
-                		this.sprite.scale.y = 0.75;
-                	}
-                    this.speed.y = 0;
-                    break;
-                }
-            }
-        }
-    }
-
-    public Sign(n:number):number
-    {
-        return (n > 0 ? 1 : (n < 0 ? -1 : 0))
+    	if (this.speed.y > 10)
+    	{
+    		Smoke.Burst(this.x, this.y, 4, 4);
+    		this.sprite.scale.x = 1.25;
+    		this.sprite.scale.y = 0.75;
+    	}
+    	super.OnCollideY();
     }
 
 }
