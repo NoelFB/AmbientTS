@@ -1,3 +1,5 @@
+/// <reference path="../utils/AmDictionary.ts"/>
+
 class AmAssetInfo
 {
     public name:string;
@@ -17,8 +19,8 @@ interface AmAssetCallback
 
 class AmAssets
 {
-    public textures:{ [name:string]:HTMLImageElement; } = { };
-    public sounds:{ [name:string]:HTMLAudioElement; } = { };
+    public textures:AmDictionary<HTMLImageElement> = { };
+    public sounds:AmDictionary<HTMLAudioElement> = { };
     public percent:number;
 
     private _textures:Array<AmAssetInfo> = new Array<AmAssetInfo>();
