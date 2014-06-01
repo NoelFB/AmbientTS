@@ -1,5 +1,5 @@
 /// <reference path="AmEntity.ts"/>
-/// <reference path="components/AmCollider.ts"/>
+/// <reference path="colliders/AmCollider.ts"/>
 
 class AmScene
 {

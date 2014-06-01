@@ -1,7 +1,7 @@
 /// <reference path="../Ambient.ts"/>
-/// <reference path="AmGraphic.ts"/>
 /// <reference path="../utils/AmRectangle.ts"/>
 /// <reference path="../utils/AmDictionary.ts"/>
+/// <reference path="AmGraphic.ts"/>
 
 class AmAnimation
 {

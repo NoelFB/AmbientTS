@@ -580,26 +580,6 @@ var AmCollider = (function (_super) {
     };
 
     AmCollider.prototype.Overlaps = function (other) {
-        if (this == other)
-            return false;
-
-        var a = this;
-        var b = other;
-
-        if (b.type == 0 /* Hitbox */) {
-            return a.OverlapsHitbox(b);
-        } else if (b.type == 1 /* Grid */) {
-            return a.OverlapsGrid(b);
-        }
-
-        return false;
-    };
-
-    AmCollider.prototype.OverlapsHitbox = function (other) {
-        return false;
-    };
-
-    AmCollider.prototype.OverlapsGrid = function (other) {
         return false;
     };
     return AmCollider;
@@ -748,26 +728,17 @@ var Loader = (function (_super) {
     };
     return Loader;
 })(AmScene);
-var AmHitbox = (function (_super) {
-    __extends(AmHitbox, _super);
-    function AmHitbox(x, y, width, height) {
-        _super.call(this, 0 /* Hitbox */);
-        this.position = new AmPoint(x, y);
-        this.width = width;
-        this.height = height;
+var AmOverlaps = (function () {
+    function AmOverlaps() {
     }
-    AmHitbox.prototype.OverlapsHitbox = function (other) {
-        var a = this;
-        var b = other;
+    AmOverlaps.HitboxToHitbox = function (a, b) {
         var pa = a.scenePosition();
         var pb = b.scenePosition();
 
         return (pa.x + a.width > pb.x && pa.y + a.height > pb.y && pa.x < pb.x + b.width && pa.y < pb.y + b.height);
     };
 
-    AmHitbox.prototype.OverlapsGrid = function (other) {
-        var a = this;
-        var b = other;
+    AmOverlaps.HitboxToGrid = function (a, b) {
         var pa = a.scenePosition();
         var pb = b.scenePosition();
 
@@ -776,13 +747,34 @@ var AmHitbox = (function (_super) {
         var right = Math.ceil((pa.x + a.width - pb.x) / b.tileWidth);
         var bottom = Math.ceil((pa.y + a.height - pb.y) / b.tileHeight);
 
-        for (var i = Math.max(0, left); i < Math.min(b.columns, right); i++) {
-            for (var j = Math.max(0, top); j < Math.min(b.rows, bottom); j++) {
-                if (b.solids[i][j])
+        for (var i = left; i < right; i++) {
+            for (var j = top; j < bottom; j++) {
+                if (b.Get(i, j))
                     return true;
             }
         }
 
+        return false;
+    };
+
+    AmOverlaps.GridToGrid = function (a, b) {
+        return false;
+    };
+    return AmOverlaps;
+})();
+var AmHitbox = (function (_super) {
+    __extends(AmHitbox, _super);
+    function AmHitbox(x, y, width, height) {
+        _super.call(this, 0 /* Hitbox */);
+        this.position = new AmPoint(x, y);
+        this.width = width;
+        this.height = height;
+    }
+    AmHitbox.prototype.Overlaps = function (other) {
+        if (other.type == 0 /* Hitbox */)
+            return AmOverlaps.HitboxToHitbox(this, other);
+        else if (other.type == 1 /* Grid */)
+            return AmOverlaps.HitboxToGrid(this, other);
         return false;
     };
     return AmHitbox;
@@ -1124,28 +1116,11 @@ var AmHitgrid = (function (_super) {
         return this.solids[x][y];
     };
 
-    AmHitgrid.prototype.OverlapsHitbox = function (other) {
-        var a = other;
-        var b = this;
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
-
-        var left = Math.floor((pa.x - pb.x) / b.tileWidth);
-        var top = Math.floor((pa.y - pb.y) / b.tileHeight);
-        var right = Math.ceil((pa.x + a.width - pb.x) / b.tileWidth);
-        var bottom = Math.ceil((pa.y + a.height - pb.y) / b.tileHeight);
-
-        for (var i = Math.max(0, left); i < Math.min(b.columns, right); i++) {
-            for (var j = Math.max(0, top); j < Math.min(b.rows, bottom); j++) {
-                if (b.solids[i][j])
-                    return true;
-            }
-        }
-
-        return false;
-    };
-
-    AmHitgrid.prototype.OverlapsGrid = function (other) {
+    AmHitgrid.prototype.Overlaps = function (other) {
+        if (other.type == 0 /* Hitbox */)
+            return AmOverlaps.HitboxToGrid(other, this);
+        else if (other.type == 1 /* Grid */)
+            return AmOverlaps.GridToGrid(this, other);
         return false;
     };
     return AmHitgrid;

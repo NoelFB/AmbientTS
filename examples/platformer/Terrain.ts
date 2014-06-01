@@ -1,7 +1,7 @@
 /// <reference path="../../ambient/Ambient.ts"/>
 /// <reference path="../../ambient/AmEntity.ts"/>
-/// <reference path="../../ambient/components/AmTilemap.ts"/>
-/// <reference path="../../ambient/components/AmHitgrid.ts"/>
+/// <reference path="../../ambient/graphics/AmTilemap.ts"/>
+/// <reference path="../../ambient/colliders/AmHitgrid.ts"/>
 /// <reference path="Main.ts"/>
 
 class Terrain extends AmEntity

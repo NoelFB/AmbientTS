@@ -1,4 +1,6 @@
 /// <reference path="AmCollider.ts"/>
+/// <reference path="AmOverlaps.ts"/>
+
 class AmHitgrid extends AmCollider
 {
     public columns:number;
@@ -48,32 +50,12 @@ class AmHitgrid extends AmCollider
         return this.solids[x][y];
     }
 
-    public OverlapsHitbox(other:any):boolean
+    public Overlaps(other:AmCollider)
     {
-        var a = other;
-        var b = this;
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
-
-        var left:number = Math.floor((pa.x - pb.x) / b.tileWidth);
-        var top:number = Math.floor((pa.y - pb.y) / b.tileHeight);
-        var right:number = Math.ceil((pa.x + a.width - pb.x) / b.tileWidth);
-        var bottom:number = Math.ceil((pa.y + a.height - pb.y) / b.tileHeight);
-
-        for (var i = Math.max(0, left); i < Math.min(b.columns, right); i ++)
-        {
-            for (var j = Math.max(0, top); j < Math.min(b.rows, bottom); j ++)
-            {
-                if (b.solids[i][j])
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    public OverlapsGrid(other:any):boolean
-    {
+        if (other.type == ColliderType.Hitbox)
+            return AmOverlaps.HitboxToGrid(other, this);
+        else if  (other.type == ColliderType.Grid)
+            return AmOverlaps.GridToGrid(this, other);
         return false;
     }
 }

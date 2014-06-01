@@ -1,4 +1,4 @@
-/// <reference path="AmComponent.ts"/>
+/// <reference path="../AmComponent.ts"/>
 
 enum ColliderType
 {
@@ -94,32 +94,7 @@ class AmCollider extends AmComponent
         return (this.Collide(tag, x, y) != null);
     }
 
-    public Overlaps(other:any):boolean
-    {
-        if (this == other)
-            return false;
-
-        var a = this;
-        var b  = other;
-
-        if (b.type == ColliderType.Hitbox)
-        {
-            return a.OverlapsHitbox(b);
-        }
-        else if (b.type == ColliderType.Grid)
-        {
-            return a.OverlapsGrid(b);
-        }
-
-        return false;
-    }
-
-    public OverlapsHitbox(other:any):boolean
-    {
-        return false;
-    }
-
-    public OverlapsGrid(other:any):boolean
+    public Overlaps(other:AmCollider):boolean
     {
         return false;
     }

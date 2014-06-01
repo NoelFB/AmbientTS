@@ -1,8 +1,8 @@
 /// <reference path="../../ambient/Ambient.ts"/>
 /// <reference path="../../ambient/AmEntity.ts"/>
 /// <reference path="../../ambient/utils/AmKeyboard.ts"/>
-/// <reference path="../../ambient/components/AmHitbox.ts"/>
-/// <reference path="../../ambient/components/AmAnimator.ts"/>
+/// <reference path="../../ambient/colliders/AmHitbox.ts"/>
+/// <reference path="../../ambient/graphics/AmAnimator.ts"/>
 /// <reference path="Main.ts"/>
 
 class Creature extends AmEntity

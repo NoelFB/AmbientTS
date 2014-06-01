@@ -1,5 +1,5 @@
 /// <reference path="../Ambient.ts"/>
-/// <reference path="AmComponent.ts"/>
+/// <reference path="../AmComponent.ts"/>
 /// <reference path="../utils/AmPoint.ts"/>
 /// <reference path="../utils/AmRectangle.ts"/>
 

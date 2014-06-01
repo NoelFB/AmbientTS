@@ -1,6 +1,6 @@
-/// <reference path="AmScene.ts"/>
 /// <reference path="utils/AmPoint.ts"/>
-/// <reference path="components/AmComponent.ts"/>
+/// <reference path="AmScene.ts"/>
+/// <reference path="AmComponent.ts"/>
 
 class AmEntity
 {
