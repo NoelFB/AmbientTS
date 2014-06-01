@@ -1,9 +1,7 @@
 AmbientTS
 =========
 
-Small framework for TypeScript HTML5 games.
-
-Not fully supporting this, simply working on it in my own time.
+Small framework for TypeScript HTML5 games. Simple working on this in my own time.
 
 ### Running example
 
@@ -15,3 +13,8 @@ http://www.typescriptlang.org/
 
 You can compile TypeScript with Visual Studio, Sublime Text, or WebStorm.
 (or simply through the command line).
+
+### ECMAScript
+
+AmbientTS targets ECMAScript 5. When compiling the TypeScript, you need to specify this with:
+--target ES5

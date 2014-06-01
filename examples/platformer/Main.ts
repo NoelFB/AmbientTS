@@ -11,5 +11,5 @@ var assets:AmAssets = new AmAssets();
 // start
 new Ambient("Ambient JS Game Test", 160, 120, 4, 60);
 Am.Run();
-Am.SetScene(new Loader());
+Am.scene = new Loader();
 

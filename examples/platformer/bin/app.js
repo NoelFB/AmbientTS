@@ -82,6 +82,11 @@ var AmPoint = (function () {
         this.y += other.y;
     };
 
+    AmPoint.prototype.Subtract = function (other) {
+        this.x -= other.x;
+        this.y -= other.y;
+    };
+
     AmPoint.prototype.Multiply = function (other) {
         this.x *= other.x;
         this.y *= other.y;
@@ -99,6 +104,10 @@ var AmPoint = (function () {
 
     AmPoint.Add = function (a, b) {
         return new AmPoint(a.x + b.x, a.y + b.y);
+    };
+
+    AmPoint.Subtract = function (a, b) {
+        return new AmPoint(a.x - b.x, a.y - b.y);
     };
 
     AmPoint.Multiply = function (a, b) {
@@ -154,13 +163,27 @@ var AmMouse = (function () {
             }
         };
     }
-    AmMouse.prototype.X = function () {
-        return this.position.x;
-    };
+    Object.defineProperty(AmMouse.prototype, "x", {
+        get: function () {
+            return this.position.x;
+        },
+        set: function (value) {
+            this.position.x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
-    AmMouse.prototype.Y = function () {
-        return this.position.y;
-    };
+    Object.defineProperty(AmMouse.prototype, "y", {
+        get: function () {
+            return this.position.y;
+        },
+        set: function (value) {
+            this.position.y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
     AmMouse.prototype.Clear = function () {
         this.leftPressed = false;
@@ -348,16 +371,19 @@ var Ambient = (function () {
         };
     };
 
-    Ambient.prototype.SetScene = function (scene) {
-        this._goto = scene;
-        return scene;
-    };
+    Object.defineProperty(Ambient.prototype, "scene", {
+        get: function () {
+            if (this._goto != null)
+                return this._goto;
+            return this._scene;
+        },
+        set: function (value) {
+            this._goto = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
-    Ambient.prototype.GetScene = function () {
-        if (this._goto != null)
-            return this._goto;
-        return this._scene;
-    };
 
     Ambient.prototype.Loop = function () {
         var time = (new Date()).getTime();
@@ -411,17 +437,47 @@ var Ambient = (function () {
 var Am;
 var AmComponent = (function () {
     function AmComponent() {
-        this.position = new AmPoint(0, 0);
         this.active = true;
         this.visible = true;
+        this.position = new AmPoint(0, 0);
     }
-    AmComponent.prototype.scenePosition = function () {
-        if (this.entity == null) {
-            console.log("no entity");
-            return this.position;
-        }
-        return AmPoint.Add(this.position, this.entity.position);
-    };
+    Object.defineProperty(AmComponent.prototype, "x", {
+        get: function () {
+            return this.position.x;
+        },
+        set: function (value) {
+            this.position.x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AmComponent.prototype, "y", {
+        get: function () {
+            return this.position.y;
+        },
+        set: function (value) {
+            this.position.y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AmComponent.prototype, "scenePosition", {
+        get: function () {
+            if (this.entity == null)
+                return this.position;
+            return AmPoint.Add(this.position, this.entity.position);
+        },
+        set: function (value) {
+            if (this.entity == null)
+                this.position = value;
+            else
+                this.position = AmPoint.Subtract(value, this.entity.position);
+        },
+        enumerable: true,
+        configurable: true
+    });
 
     AmComponent.prototype.Start = function () {
     };
@@ -444,12 +500,27 @@ var AmEntity = (function () {
         this.depth = 0;
         this.components = new Array();
     }
-    AmEntity.prototype.X = function () {
-        return this.position.x;
-    };
-    AmEntity.prototype.Y = function () {
-        return this.position.y;
-    };
+    Object.defineProperty(AmEntity.prototype, "x", {
+        get: function () {
+            return this.position.x;
+        },
+        set: function (value) {
+            this.position.x = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+
+    Object.defineProperty(AmEntity.prototype, "y", {
+        get: function () {
+            return this.position.y;
+        },
+        set: function (value) {
+            this.position.y = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
 
     AmEntity.prototype.Start = function () {
         for (var i = 0; i < this.components.length; i++) {
@@ -705,9 +776,9 @@ var Loader = (function (_super) {
         assets.Load(null, null);
     }
     Loader.prototype.Begin = function () {
-        Am.SetScene(new AmScene());
-        Am.GetScene().Add(new Terrain());
-        Am.GetScene().Add(new Creature());
+        Am.scene = new AmScene();
+        Am.scene.Add(new Terrain());
+        Am.scene.Add(new Creature());
     };
 
     Loader.prototype.Update = function () {
@@ -732,15 +803,15 @@ var AmOverlaps = (function () {
     function AmOverlaps() {
     }
     AmOverlaps.HitboxToHitbox = function (a, b) {
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
+        var pa = a.scenePosition;
+        var pb = b.scenePosition;
 
         return (pa.x + a.width > pb.x && pa.y + a.height > pb.y && pa.x < pb.x + b.width && pa.y < pb.y + b.height);
     };
 
     AmOverlaps.HitboxToGrid = function (a, b) {
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
+        var pa = a.scenePosition;
+        var pb = b.scenePosition;
 
         var left = Math.floor((pa.x - pb.x) / b.tileWidth);
         var top = Math.floor((pa.y - pb.y) / b.tileHeight);
@@ -807,7 +878,7 @@ var AmGraphic = (function (_super) {
 
     AmGraphic.prototype.Render = function () {
         Am.context.save();
-        Am.context.translate(this.scenePosition().x, this.scenePosition().y);
+        Am.context.translate(this.scenePosition.x, this.scenePosition.y);
         Am.context.scale(this.scale.x, this.scale.y);
         Am.context.translate(-this.origin.x, -this.origin.y);
         Am.context.drawImage(this.texture, this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height, 0, 0, this.bounds.width, this.bounds.height);
@@ -1073,7 +1144,7 @@ var AmTilemap = (function (_super) {
                     var tx = (this.data[i][j][tile] % this.columns);
                     var ty = Math.floor(this.data[i][j][tile] / this.columns);
 
-                    Am.context.drawImage(this.texture, tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight, this.scenePosition().x + i * this.tileWidth * this.scale.x, this.scenePosition().y + j * this.tileHeight * this.scale.y, this.tileWidth * this.scale.x, this.tileHeight * this.scale.y);
+                    Am.context.drawImage(this.texture, tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight, this.scenePosition.x + i * this.tileWidth * this.scale.x, this.scenePosition.y + j * this.tileHeight * this.scale.y, this.tileWidth * this.scale.x, this.tileHeight * this.scale.y);
                 }
             }
         }
@@ -1150,7 +1221,7 @@ var Terrain = (function (_super) {
         _super.prototype.Update.call(this);
 
         if (Am.mouse.leftPressed || Am.mouse.rightPressed) {
-            var point = new AmPoint(Math.floor(Am.mouse.X() / 8), Math.floor(Am.mouse.Y() / 8));
+            var point = new AmPoint(Math.floor(Am.mouse.x / 8), Math.floor(Am.mouse.y / 8));
             this.collider.Set(point.x, point.y, Am.mouse.leftPressed);
 
             this.tilemap.ClearRect(point.x - 1, point.y - 1, 3, 3);
@@ -1222,7 +1293,7 @@ var Terrain = (function (_super) {
         _super.prototype.Render.call(this);
 
         Am.context.beginPath();
-        Am.context.rect(Math.floor(Am.mouse.X() / 8) * 8, Math.floor(Am.mouse.Y() / 8) * 8, 8, 8);
+        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.lineWidth = 1;
         Am.context.strokeStyle = '#ff0000';
         Am.context.stroke();
@@ -1233,4 +1304,4 @@ var assets = new AmAssets();
 
 new Ambient("Ambient JS Game Test", 160, 120, 4, 60);
 Am.Run();
-Am.SetScene(new Loader());
+Am.scene = new Loader();

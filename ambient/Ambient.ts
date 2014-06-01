@@ -102,17 +102,16 @@ class Ambient
         }
     }
 
-    public SetScene(scene:AmScene):AmScene
-    {
-        this._goto = scene;
-        return scene;
-    }
-
-    public GetScene():AmScene
+    public get scene():AmScene
     {
         if (this._goto != null)
             return this._goto;
         return this._scene;
+    }
+    
+    public set scene(value:AmScene)
+    {
+        this._goto = value;
     }
 
     private Loop()

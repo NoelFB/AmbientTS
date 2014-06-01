@@ -2,16 +2,16 @@ class AmOverlaps
 {
 	public static HitboxToHitbox(a:any, b:any):boolean
 	{
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
+        var pa = a.scenePosition;
+        var pb = b.scenePosition;
 
         return (pa.x + a.width > pb.x && pa.y + a.height > pb.y && pa.x < pb.x + b.width && pa.y < pb.y + b.height);
 	}
 
 	public static HitboxToGrid(a:any, b:any):boolean
 	{
-        var pa = a.scenePosition();
-        var pb = b.scenePosition();
+        var pa = a.scenePosition;
+        var pb = b.scenePosition;
 
         var left:number = Math.floor((pa.x - pb.x) / b.tileWidth);
         var top:number = Math.floor((pa.y - pb.y) / b.tileHeight);

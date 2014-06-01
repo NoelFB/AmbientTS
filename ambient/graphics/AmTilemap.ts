@@ -82,7 +82,7 @@ class AmTilemap extends AmGraphic
 
                     Am.context.drawImage(this.texture,
                         tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight,
-                        this.scenePosition().x + i * this.tileWidth * this.scale.x, this.scenePosition().y + j * this.tileHeight * this.scale.y,
+                        this.scenePosition.x + i * this.tileWidth * this.scale.x, this.scenePosition.y + j * this.tileHeight * this.scale.y,
                         this.tileWidth * this.scale.x, this.tileHeight * this.scale.y);
                 }
             }

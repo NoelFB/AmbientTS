@@ -29,7 +29,7 @@ class AmGraphic extends AmComponent
     public Render()
     {
         Am.context.save();
-        Am.context.translate(this.scenePosition().x, this.scenePosition().y);
+        Am.context.translate(this.scenePosition.x, this.scenePosition.y);
         Am.context.scale(this.scale.x, this.scale.y);
         Am.context.translate( - this.origin.x, - this.origin.y);
         Am.context.drawImage(this.texture,

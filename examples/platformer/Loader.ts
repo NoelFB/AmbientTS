@@ -16,9 +16,9 @@ class Loader extends AmScene
 
     public Begin()
     {
-        Am.SetScene(new AmScene());
-        Am.GetScene().Add(new Terrain());
-        Am.GetScene().Add(new Creature());
+        Am.scene = new AmScene();
+        Am.scene.Add(new Terrain());
+        Am.scene.Add(new Creature());
     }
 
     public Update()

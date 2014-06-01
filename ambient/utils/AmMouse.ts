@@ -14,6 +14,12 @@ class AmMouse
 
     private canvas:HTMLElement;
 
+    public get x():number { return this.position.x; }
+    public set x(value:number) { this.position.x = value; }
+
+    public get y():number { return this.position.y; }
+    public set y(value:number) { this.position.y = value; }
+
     public constructor(canvas:HTMLElement)
     {
         this.canvas = canvas;
@@ -50,16 +56,6 @@ class AmMouse
                 this.leftDown = false;
             }
         }
-    }
-
-    public X():number
-    {
-        return this.position.x;
-    }
-
-    public Y():number
-    {
-        return this.position.y;
     }
 
     public Clear()

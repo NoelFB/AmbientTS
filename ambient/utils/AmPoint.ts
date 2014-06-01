@@ -15,6 +15,12 @@ class AmPoint
         this.y += other.y;
     }
 
+    public Subtract(other:AmPoint)
+    {
+        this.x -= other.x;
+        this.y -= other.y;
+    }
+
     public Multiply(other:AmPoint)
     {
         this.x *= other.x;
@@ -36,6 +42,11 @@ class AmPoint
     public static Add(a:AmPoint, b:AmPoint):AmPoint
     {
         return new AmPoint(a.x + b.x, a.y + b.y);
+    }
+
+    public static Subtract(a:AmPoint, b:AmPoint):AmPoint
+    {
+        return new AmPoint(a.x - b.x, a.y - b.y);
     }
 
     public static Multiply(a:AmPoint, b:AmPoint):AmPoint

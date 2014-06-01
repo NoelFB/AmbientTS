@@ -37,7 +37,7 @@ class Terrain extends AmEntity
 
         if (Am.mouse.leftPressed || Am.mouse.rightPressed)
         {
-            var point:AmPoint = new AmPoint(Math.floor(Am.mouse.X() / 8), Math.floor(Am.mouse.Y() / 8));
+            var point:AmPoint = new AmPoint(Math.floor(Am.mouse.x / 8), Math.floor(Am.mouse.y / 8));
             this.collider.Set(point.x, point.y, Am.mouse.leftPressed);
 
             this.tilemap.ClearRect(point.x - 1, point.y - 1, 3, 3);
@@ -147,7 +147,7 @@ class Terrain extends AmEntity
         super.Render();
 
         Am.context.beginPath();
-        Am.context.rect(Math.floor(Am.mouse.X() / 8) * 8, Math.floor(Am.mouse.Y() / 8) * 8, 8, 8);
+        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.lineWidth = 1;
         Am.context.strokeStyle = '#ff0000';
         Am.context.stroke();
