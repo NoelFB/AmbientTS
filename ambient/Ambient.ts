@@ -16,6 +16,7 @@ class Ambient
     public camera:AmPoint = new AmPoint(0, 0);
     public clear:string = "#0e2129";
     public keepPixelScale:boolean = false;
+    public smoothing:boolean = false;
     public container:any;
 
     // the main canvas to draw to
@@ -216,6 +217,13 @@ class Ambient
         }
     }
 
+    public DisableSmoothing(context:any)
+    {
+        context.msImageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = false;
+        context.mozImageSmoothingEnabled = false;
+    }
+
     public Render()
     {
         // clear
@@ -229,6 +237,10 @@ class Ambient
         Am.context.save();
         Am.context.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
 
+        // smooth main canvas
+        if (!this.smoothing)
+            Am.DisableSmoothing(this.context);
+
         // draw scene
         if (this._scene != null)
             this._scene.Render();
@@ -237,9 +249,9 @@ class Ambient
         Am.context.restore();
 
         // scale up to output (scaled canvas)
-        this.contextScaled.msImageSmoothingEnabled = false;
-        this.contextScaled.webkitImageSmoothingEnabled = false;
-        this.contextScaled.mozImageSmoothingEnabled = false;
+        if (!this.smoothing)
+            this.DisableSmoothing(this.contextScaled);
+
         this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
         this.contextScaled.fillStyle = "#000000";
         this.contextScaled.fillRect(0, 0, this.canvasScaled.width, this.canvasScaled.height)
