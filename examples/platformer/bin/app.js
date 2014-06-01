@@ -341,6 +341,7 @@ var Ambient = (function () {
         this.camera = new AmPoint(0, 0);
         this.clear = "#0e2129";
         this.keepPixelScale = false;
+        this.smoothing = false;
         this._scale = 1;
         this._scene = null;
         this._goto = null;
@@ -491,6 +492,12 @@ var Ambient = (function () {
         }
     };
 
+    Ambient.prototype.DisableSmoothing = function (context) {
+        context.msImageSmoothingEnabled = false;
+        context.webkitImageSmoothingEnabled = false;
+        context.mozImageSmoothingEnabled = false;
+    };
+
     Ambient.prototype.Render = function () {
         this.context.clearRect(0, 0, this.width, this.height);
 
@@ -500,14 +507,17 @@ var Ambient = (function () {
         Am.context.save();
         Am.context.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
 
+        if (!this.smoothing)
+            Am.DisableSmoothing(this.context);
+
         if (this._scene != null)
             this._scene.Render();
 
         Am.context.restore();
 
-        this.contextScaled.msImageSmoothingEnabled = false;
-        this.contextScaled.webkitImageSmoothingEnabled = false;
-        this.contextScaled.mozImageSmoothingEnabled = false;
+        if (!this.smoothing)
+            this.DisableSmoothing(this.contextScaled);
+
         this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
         this.contextScaled.fillStyle = "#000000";
         this.contextScaled.fillRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
@@ -1057,7 +1067,7 @@ var Creature = (function (_super) {
         this.movementRemainder = new AmPoint(0, 0);
         this.position = new AmPoint(80, 60);
 
-        this.collider = new AmHitbox(-4, -4, 8, 8);
+        this.collider = new AmHitbox(-4, -8, 8, 8);
         this.Add(this.collider);
 
         this.sprite = new AmAnimator(assets.textures["player"], 16, 16);
@@ -1066,7 +1076,7 @@ var Creature = (function (_super) {
         this.sprite.Add("jump", [1], 0);
         this.sprite.Play("idle", true);
         this.sprite.origin.x = 8;
-        this.sprite.origin.y = 12;
+        this.sprite.origin.y = 16;
         this.Add(this.sprite);
 
         this.depth = 5;
@@ -1078,7 +1088,6 @@ var Creature = (function (_super) {
 
         if (axis != 0)
             this.facing = axis;
-        this.sprite.scale.x = this.facing;
 
         this.speed.x += axis * this.accel * Am.deltaTime;
 
@@ -1130,6 +1139,17 @@ var Creature = (function (_super) {
             Am.ToggleFullscreen();
         if (Am.keyboard.Pressed(AmKey.P))
             Am.keepPixelScale = !Am.keepPixelScale;
+
+        if (this.sprite.scale.y < 1)
+            this.sprite.scale.y += Am.deltaTime * 2;
+        else
+            this.sprite.scale.y = 1;
+
+        this.sprite.scale.x = this.facing * Math.abs(this.sprite.scale.x);
+        if (Math.abs(this.sprite.scale.x) > 1)
+            this.sprite.scale.x -= this.facing * Am.deltaTime * 2;
+        else
+            this.sprite.scale.x = this.facing;
     };
 
     Creature.prototype.MoveX = function (amount) {
@@ -1167,6 +1187,10 @@ var Creature = (function (_super) {
                     this.position.y += step;
                     moveBy -= step;
                 } else {
+                    if (this.speed.y > 10) {
+                        this.sprite.scale.x = 1.25;
+                        this.sprite.scale.y = 0.75;
+                    }
                     this.speed.y = 0;
                     break;
                 }
@@ -1383,9 +1407,9 @@ var Terrain = (function (_super) {
         _super.prototype.Render.call(this);
 
         Am.context.beginPath();
-        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.lineWidth = 1;
         Am.context.strokeStyle = '#ff0000';
+        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.stroke();
     };
     return Terrain;

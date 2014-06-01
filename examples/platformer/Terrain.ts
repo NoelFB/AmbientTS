@@ -147,9 +147,9 @@ class Terrain extends AmEntity
         super.Render();
 
         Am.context.beginPath();
-        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.lineWidth = 1;
         Am.context.strokeStyle = '#ff0000';
+        Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
         Am.context.stroke();
     }
 }

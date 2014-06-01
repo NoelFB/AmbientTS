@@ -27,7 +27,7 @@ class Creature extends AmEntity
         super();
         this.position = new AmPoint(80, 60);
 
-        this.collider = new AmHitbox(-4, -4, 8, 8);
+        this.collider = new AmHitbox(-4, -8, 8, 8);
         this.Add(this.collider);
 
         this.sprite = new AmAnimator(assets.textures["player"], 16, 16);
@@ -36,7 +36,7 @@ class Creature extends AmEntity
         this.sprite.Add("jump", [1], 0);
         this.sprite.Play("idle", true);
         this.sprite.origin.x = 8;
-        this.sprite.origin.y = 12;
+        this.sprite.origin.y = 16;
         this.Add(this.sprite);
 
         this.depth = 5;
@@ -49,10 +49,9 @@ class Creature extends AmEntity
         // get input direction
         var axis:number = (Am.keyboard.Down(AmKey.LEFT) ? -1 : (Am.keyboard.Down(AmKey.RIGHT) ? 1 : 0));
 
-        // update facing & sprite scale
+        // update facing 
         if (axis != 0)
             this.facing = axis;
-        this.sprite.scale.x = this.facing;
 
         // accelerate
         this.speed.x += axis * this.accel * Am.deltaTime;
@@ -118,6 +117,19 @@ class Creature extends AmEntity
             Am.ToggleFullscreen();
         if  (Am.keyboard.Pressed(AmKey.P))
             Am.keepPixelScale = !Am.keepPixelScale;
+
+        // scale Y
+        if (this.sprite.scale.y < 1)
+        	this.sprite.scale.y += Am.deltaTime * 2;
+        else
+        	this.sprite.scale.y = 1;
+
+        // scale X
+        this.sprite.scale.x = this.facing * Math.abs(this.sprite.scale.x);
+        if (Math.abs(this.sprite.scale.x) > 1)
+        	this.sprite.scale.x -= this.facing * Am.deltaTime * 2;
+		else
+			this.sprite.scale.x = this.facing;        	
     }
 
     public MoveX(amount:number)
@@ -167,6 +179,11 @@ class Creature extends AmEntity
                 }
                 else
                 {
+                	if (this.speed.y > 10)
+                	{
+                		this.sprite.scale.x = 1.25;
+                		this.sprite.scale.y = 0.75;
+                	}
                     this.speed.y = 0;
                     break;
                 }
