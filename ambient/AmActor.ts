@@ -61,59 +61,59 @@ class AmActor extends AmEntity
 		this.MoveAbsoluteY(amount * Am.deltaTime);
 	}
 
-    public MoveAbsoluteX(amount:number)
-    {
-        amount += this.movementRemainder.x;
-        this.movementRemainder.x = amount % 1;
-        var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
+	public MoveAbsoluteX(amount:number)
+	{
+		amount += this.movementRemainder.x;
+		this.movementRemainder.x = amount % 1;
+		var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
 
-        if (this.collider == null)
-            this.position.x += moveBy;
-        else
-        {
-            var step = this.Sign(moveBy);
-            while (moveBy != 0)
-            {
-                if (!this.collider.Check(this.solidTag, step, 0))
-                {
-                    this.position.x += step;
-                    moveBy -= step;
-                }
-                else
-                {
-                    this.OnCollideX();
-                    break;
-                }
-            }
-        }
-    }
+		if (this.collider == null)
+			this.position.x += moveBy;
+		else
+		{
+			var step = this.Sign(moveBy);
+			while (moveBy != 0)
+			{
+				if (!this.collider.Check(this.solidTag, step, 0))
+				{
+					this.position.x += step;
+					moveBy -= step;
+				}
+				else
+				{
+					this.OnCollideX();
+					break;
+				}
+			}
+		}
+	}
 
-    public MoveAbsoluteY(amount:number)
-    {
-        amount += this.movementRemainder.y;
-        this.movementRemainder.y = amount % 1;
-        var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
+	public MoveAbsoluteY(amount:number)
+	{
+		amount += this.movementRemainder.y;
+		this.movementRemainder.y = amount % 1;
+		var moveBy = amount > 0 ? Math.floor(amount) : Math.ceil(amount);
 
-        if (this.collider == null)
-            this.position.y += moveBy;
-        else
-        {
-            var step = this.Sign(moveBy);
-            while (moveBy != 0)
-            {
-                if (!this.collider.Check(this.solidTag, 0, step))
-                {
-                    this.position.y += step;
-                    moveBy -= step;
-                }
-                else
-                {
-                	this.OnCollideY();
-                    break;
-                }
-            }
-        }
-    }
+		if (this.collider == null)
+			this.position.y += moveBy;
+		else
+		{
+			var step = this.Sign(moveBy);
+			while (moveBy != 0)
+			{
+				if (!this.collider.Check(this.solidTag, 0, step))
+				{
+					this.position.y += step;
+					moveBy -= step;
+				}
+				else
+				{
+					this.OnCollideY();
+					break;
+				}
+			}
+		}
+	}
 
 	public OnCollideX()
 	{
@@ -126,8 +126,8 @@ class AmActor extends AmEntity
 	}
 
 	public Sign(n:number):number
-    {
-        return (n > 0 ? 1 : (n < 0 ? -1 : 0))
-    }
+	{
+		return (n > 0 ? 1 : (n < 0 ? -1 : 0))
+	}
 
 }

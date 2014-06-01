@@ -67,6 +67,4 @@ class Smoke extends AmEntity
 			Am.scene.Add(smoke);
 		}
 	}
-
-
 }

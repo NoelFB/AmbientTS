@@ -1,4 +1,4 @@
 interface AmDictionary<T>
 {
-    [key: string]: T;
+	[key: string]: T;
 }
