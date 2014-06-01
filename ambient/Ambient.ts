@@ -19,6 +19,7 @@ class Ambient
     public snapCameraToPixels:boolean = false;
     public smoothing:boolean = false;
     public container:any;
+    public elapsedTime:number = 0;
 
     // the main canvas to draw to
     public canvas:any;
@@ -44,6 +45,7 @@ class Ambient
 
     // time, used for deltaTime
     private _date:number;
+    private _startDate:number;
 
     constructor(name:string, width:number, height:number, scale:number, fps:number)
     {
@@ -107,6 +109,7 @@ class Ambient
 
             // start loop
             this._date = (new Date()).getTime();
+            this._startDate = (new Date()).getTime();
             setInterval(() => this.Loop(), 1000 / this.fps);
 
             // on window resize
@@ -184,12 +187,18 @@ class Ambient
         return new AmPoint((this.canvasScaled.width - this.width * scale) / 2, (this.canvasScaled.height - this.height * scale) / 2);
     }
 
+    public OnInterval(interval:number):boolean
+    {
+        return Math.floor((this.elapsedTime - this.deltaTime) / interval) < Math.floor(this.elapsedTime / interval);
+    }
+
     private Loop()
     {
         // get delta time
         var time:number = (new Date()).getTime();
         this.deltaTime = (time - this._date) / 1000;
         this._date = time;
+        this.elapsedTime = (time - this._startDate) / 1000;
 
         // update
         this.Update();
