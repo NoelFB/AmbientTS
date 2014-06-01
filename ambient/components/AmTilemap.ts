@@ -36,14 +36,32 @@ class AmTilemap extends AmGraphic
 
     public Set(column:number, row:number, tileX:number, tileY:number)
     {
-        if (!this.stacking)
-            this.data[column][row] = new Array<number>();
-        this.data[column][row].push(this.GetIndex(tileX, tileY));
+        if (column >= 0 && row >= 0 && column < this.columns && row < this.rows)
+        {
+            if (!this.stacking)
+                this.data[column][row] = new Array<number>();
+            this.data[column][row].push(this.GetIndex(tileX, tileY));
+        }
     }
 
     public Clear(column:number, row:number)
     {
-        this.data[column][row] = new Array<number>();
+        if (column >= 0 && row >= 0 && column < this.columns && row < this.rows)
+            this.data[column][row] = new Array<number>();
+    }
+
+    public ClearRect(column:number, row:number, w:number, h:number)
+    {
+        for (var i = Math.max(0, column); i < Math.min(this.columns, column + w); i ++)
+            for (var j = Math.max(0, row); j < Math.min(this.rows, row + h); j ++)
+                this.data[i][j] = new Array<number>();
+    }
+
+    public ClearAll()
+    {
+        for (var i = 0; i < this.columns; i ++)
+            for (var j = 0; j < this.rows; j ++)
+                this.data[i][j] = new Array<number>();
     }
 
     public GetIndex(tileX:number, tileY:number):number

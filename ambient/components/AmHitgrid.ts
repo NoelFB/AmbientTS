@@ -30,7 +30,8 @@ class AmHitgrid extends AmCollider
 
     public Set(x:number, y:number, solid:boolean)
     {
-        this.solids[x][y] = solid;
+        if (x >= 0 && y >= 0 && x < this.columns && y < this.rows)
+            this.solids[x][y] = solid;
     }
 
     public SetRect(x:number, y:number, w:number, h:number, solid:boolean)
