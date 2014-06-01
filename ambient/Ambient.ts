@@ -88,7 +88,13 @@ class Ambient
 
             // get input
             this.keyboard = new AmKeyboard(this.canvas);
-            this.mouse = new AmMouse(this.canvas);
+            this.mouse = new AmMouse(this.canvasScaled);
+
+            // disable right click on scaled visible canvas
+            this.canvasScaled.oncontextmenu = (e) =>
+            {
+                e.preventDefault();
+            }
 
             // start loop
             this._date = (new Date()).getTime();
