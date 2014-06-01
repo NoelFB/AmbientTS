@@ -137,13 +137,8 @@ var AmMouse = (function () {
         this.rightPressed = false;
         this.rightReleased = false;
         this.rightDown = false;
+        this.treatTouchAsMouse = true;
         this.canvas = canvas;
-
-        this.canvas.onmousemove = function (e) {
-            var viewScale = Am.GetViewportScale();
-            var viewOffset = Am.GetViewportOffset();
-            _this.position = new AmPoint((e.offsetX - viewOffset.x) / viewScale + Am.camera.x, (e.offsetY - viewOffset.y) / viewScale + Am.camera.y);
-        };
 
         this.canvas.onmousedown = function (e) {
             if (("which" in e && e.which == 3) || ("button" in e && e.button == 2)) {
@@ -164,6 +159,34 @@ var AmMouse = (function () {
                 _this.leftDown = false;
             }
         };
+
+        this.canvas.onmousemove = function (e) {
+            var viewScale = Am.GetViewportScale();
+            var viewOffset = Am.GetViewportOffset();
+            _this.position = new AmPoint((e.offsetX - viewOffset.x) / viewScale + Am.camera.x, (e.offsetY - viewOffset.y) / viewScale + Am.camera.y);
+        };
+
+        this.canvas.addEventListener("touchstart", function (e) {
+            if (_this.treatTouchAsMouse) {
+                _this.leftPressed = true;
+                _this.leftDown = true;
+            }
+        });
+
+        this.canvas.addEventListener("touchend", function (e) {
+            if (_this.treatTouchAsMouse) {
+                _this.leftReleased = true;
+                _this.leftDown = false;
+            }
+        });
+
+        this.canvas.addEventListener("touchmove", function (e) {
+            if (_this.treatTouchAsMouse) {
+                var viewScale = Am.GetViewportScale();
+                var viewOffset = Am.GetViewportOffset();
+                _this.position = new AmPoint((e.changedTouches[0].pageX - viewOffset.x) / viewScale + Am.camera.x, (e.changedTouches[0].pageX - viewOffset.y) / viewScale + Am.camera.y);
+            }
+        });
     }
     Object.defineProperty(AmMouse.prototype, "x", {
         get: function () {
