@@ -1,4 +1,4 @@
-/// <reference path="../../ambient/utils/AmAssets.ts"/>
+/// <reference path="../../ambient/data/AmAssets.ts"/>
 /// <reference path="../../ambient/AmScene.ts"/>
 /// <reference path="../../ambient/Ambient.ts"/>
 /// <reference path="Loader.ts"/>
