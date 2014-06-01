@@ -612,7 +612,6 @@ var AmEntity = (function () {
         this.components = new Array();
         this._tags = new Array();
         this._totag = new Array();
-        this.id = (AmEntity.ID_TOTAL++);
         this.Tag("all");
     }
     Object.defineProperty(AmEntity.prototype, "x", {
@@ -716,7 +715,6 @@ var AmEntity = (function () {
                 this.components[i].Render();
         }
     };
-    AmEntity.ID_TOTAL = 0;
     return AmEntity;
 })();
 var __extends = this.__extends || function (d, b) {
@@ -816,6 +814,7 @@ var AmScene = (function () {
         this.removing = new Array();
         this.colliders = {};
         this.taggedEntities = {};
+        this._entityInstanceId = 0;
     }
     AmScene.prototype.Start = function () {
     };
@@ -824,6 +823,7 @@ var AmScene = (function () {
     };
 
     AmScene.prototype.Add = function (entity) {
+        entity.id = (this._entityInstanceId++);
         this.adding.push(entity);
         return entity;
     };
@@ -876,11 +876,7 @@ var AmScene = (function () {
         return new Array();
     };
 
-    AmScene.prototype.GetEntitiesByTags = function () {
-        var tags = [];
-        for (var _i = 0; _i < (arguments.length - 0); _i++) {
-            tags[_i] = arguments[_i + 0];
-        }
+    AmScene.prototype.GetEntitiesByTags = function (tags) {
         var added = {};
         var list = new Array();
         for (var i = 0; i < tags.length; i++) {

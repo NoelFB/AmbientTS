@@ -26,7 +26,6 @@ class AmEntity
 
     constructor()
     {
-        this.id = (AmEntity.ID_TOTAL++);
         this.Tag("all");
     }
 
