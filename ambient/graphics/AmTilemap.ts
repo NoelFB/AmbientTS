@@ -106,22 +106,27 @@ class AmTilemap extends AmGraphic
 
 	public Render()
 	{
+		Am.context.save();
+		Am.context.translate(this.scenePosition.x, this.scenePosition.y);
+		Am.context.scale(this.scale.x, this.scale.y);
+		Am.context.translate( - this.origin.x, - this.origin.y);
 		for (var i = 0; i < this.columns; i ++)
 		{
 			for (var j = 0; j < this.rows; j ++)
 			{
-				for (var tile = 0; tile < this.data[i][j].length; tile ++)
+				var tileData:Array<number> = this.data[i][j]
+				for (var tile = 0; tile < tileData.length; tile ++)
 				{
-					var tx = (this.data[i][j][tile] % this.columns);
-					var ty = Math.floor(this.data[i][j][tile] / this.columns);
+					var tx = (tileData[tile] % this.columns);
+					var ty = Math.floor(tileData[tile] / this.columns);
 
 					Am.context.drawImage(this.texture,
-					tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight,
-					this.scenePosition.x + i * this.tileWidth * this.scale.x, this.scenePosition.y + j * this.tileHeight * this.scale.y,
-					this.tileWidth * this.scale.x, this.tileHeight * this.scale.y);
+						tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight,
+						i * this.tileWidth, j * this.tileHeight, this.tileWidth, this.tileHeight);
 				}
 			}
 		}
+		Am.context.restore();
 	}
 
 }
