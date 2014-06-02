@@ -127,7 +127,7 @@ class Ambient
 	public get scene():AmScene
 	{
 		if (this._goto != null)
-		return this._goto;
+			return this._goto;
 		return this._scene;
 	}
 
@@ -251,7 +251,7 @@ class Ambient
 
 			// smooth main canvas
 			if (!this.smoothing)
-			Am.DisableSmoothing(this.context);
+				Am.DisableSmoothing(this.context);
 
 			// draw scene
 			if (this._scene != null)
@@ -265,7 +265,7 @@ class Ambient
 		{
 			// scale up to output (scaled canvas)
 			if (!this.smoothing)
-			this.DisableSmoothing(this.contextScaled);
+				this.DisableSmoothing(this.contextScaled);
 
 			this.contextScaled.clearRect(0, 0, this.canvasScaled.width, this.canvasScaled.height);
 
@@ -275,7 +275,7 @@ class Ambient
 
 			// if snap camera to pixels is false, let us move the camera at "subpixels" 
 			// (ex say the app is scaled to 4, the camera can then offset 0, 0.25, 0.50, 0.75). creates smoother movement
-			var shift:AmPoint = this.snapCameraToPixels ? new AmPoint(0, 0) : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
+			var shift:AmPoint = this.snapCameraToPixels ? AmPoint.Zero() : new AmPoint(Math.floor((this.camera.x % 1) * scale), Math.floor((this.camera.y % 1) * scale));
 
 			// draw the app to the visible canvas
 			this.contextScaled.drawImage(this.canvas, offset.x - shift.x, offset.y - shift.y, this.canvas.width * scale, this.canvas.height * scale);
