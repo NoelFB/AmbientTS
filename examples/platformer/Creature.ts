@@ -103,9 +103,9 @@ class Creature extends AmActor
 
 		// scale Y back
 		if (this.sprite.scale.y < 1)
-		this.sprite.scale.y += Am.deltaTime * 2;
+			this.sprite.scale.y += Am.deltaTime * 2;
 		else
-		this.sprite.scale.y = 1;
+			this.sprite.scale.y = 1;
 
 		// scale X back
 		this.sprite.scale.x = this.facing * Math.abs(this.sprite.scale.x);

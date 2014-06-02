@@ -13,7 +13,7 @@ class AmTilemap extends AmGraphic
 
 	public data:Array<Array<Array<number>>>;
 
-	constructor(texture:HTMLImageElement, tileWidth:number, tileHeight:number, columns:number, rows:number, stacking:boolean)
+	constructor(texture:HTMLImageElement, tileWidth:number, tileHeight:number, columns:number, rows:number, stacking:boolean = true)
 	{
 		super(texture, new AmRectangle(0, 0, tileWidth, tileHeight));
 
@@ -34,26 +34,52 @@ class AmTilemap extends AmGraphic
 		}
 	}
 
-	public Set(column:number, row:number, tileX:number, tileY:number)
+	public Set(x:number, y:number, tileX:number, tileY:number)
 	{
-		if (column >= 0 && row >= 0 && column < this.columns && row < this.rows)
+		if (x >= 0 && y >= 0 && x < this.columns && y < this.rows)
 		{
 			if (!this.stacking)
-				this.data[column][row] = new Array<number>();
-			this.data[column][row].push(this.GetIndex(tileX, tileY));
+				this.data[x][y] = new Array<number>();
+			this.data[x][y].push(this.GetIndex(tileX, tileY));
 		}
 	}
 
-	public Clear(column:number, row:number)
+	public SetRect(x:number, y:number, width:number, height:number, tileX:number, tileY:number)
 	{
-		if (column >= 0 && row >= 0 && column < this.columns && row < this.rows)
-			this.data[column][row] = new Array<number>();
+		for (var i = Math.max(0, x); i < Math.min(this.columns, x + width); i ++)
+		{
+			for (var j = Math.max(0, y); j < Math.min(this.rows, y + height); j ++)
+			{
+				if (!this.stacking)
+					this.data[i][j] = new Array<number>();
+				this.data[i][j].push(this.GetIndex(tileX, tileY));
+			}
+		}
 	}
 
-	public ClearRect(column:number, row:number, w:number, h:number)
+	public SeAll(x:number, y:number, tileX:number, tileY:number)
 	{
-		for (var i = Math.max(0, column); i < Math.min(this.columns, column + w); i ++)
-			for (var j = Math.max(0, row); j < Math.min(this.rows, row + h); j ++)
+		for (var i = 0; i < this.columns; i ++)
+		{
+			for (var j = 0; j < this.rows; j ++)
+			{
+				if (!this.stacking)
+					this.data[i][j] = new Array<number>();
+				this.data[i][j].push(this.GetIndex(tileX, tileY));
+			}
+		}
+	}
+
+	public Clear(x:number, y:number)
+	{
+		if (x >= 0 && y >= 0 && x < this.columns && y < this.rows)
+			this.data[x][y] = new Array<number>();
+	}
+
+	public ClearRect(x:number, y:number, width:number, height:number)
+	{
+		for (var i = Math.max(0, x); i < Math.min(this.columns, x + width); i ++)
+			for (var j = Math.max(0, y); j < Math.min(this.rows, y + height); j ++)
 				this.data[i][j] = new Array<number>();
 	}
 
@@ -62,6 +88,15 @@ class AmTilemap extends AmGraphic
 		for (var i = 0; i < this.columns; i ++)
 			for (var j = 0; j < this.rows; j ++)
 				this.data[i][j] = new Array<number>();
+	}
+
+	public Get(x:number, y:number):any
+	{
+		if (x < 0 || y < 0 || x >= this.columns || y >= this.rows)
+			return -1;
+		if (!this.stacking)
+			return this.data[x][y][0];
+		return this.data[x][y];
 	}
 
 	public GetIndex(tileX:number, tileY:number):number

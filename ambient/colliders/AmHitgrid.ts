@@ -36,11 +36,18 @@ class AmHitgrid extends AmCollider
 			this.solids[x][y] = solid;
 	}
 
-	public SetRect(x:number, y:number, w:number, h:number, solid:boolean)
+	public SetRect(x:number, y:number, width:number, height:number, solid:boolean)
 	{
-		for (var i = Math.max(0, x); i < Math.min(this.columns, x + w); i ++)
-		for (var j = Math.max(0, y); j < Math.min(this.rows, y + h); j ++)
-		this.solids[i][j] = solid;
+		for (var i = Math.max(0, x); i < Math.min(this.columns, x + width); i ++)
+			for (var j = Math.max(0, y); j < Math.min(this.rows, y + height); j ++)
+				this.solids[i][j] = solid;
+	}
+
+	public SetAll(solid:boolean)
+	{
+		for (var i = 0; i < this.columns; i ++)
+			for (var j = 0; j < this.rows; j ++)
+				this.solids[i][j] = solid;
 	}
 
 	public Get(x:number, y:number):boolean
