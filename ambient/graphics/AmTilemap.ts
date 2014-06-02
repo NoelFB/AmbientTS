@@ -1,7 +1,9 @@
 /// <reference path="../Ambient.ts"/>
 /// <reference path="../utils/AmRectangle.ts"/>
 /// <reference path="../utils/AmDictionary.ts"/>
+/// <reference path="../data/AmTexture.ts"/>
 /// <reference path="AmGraphic.ts"/>
+/// <reference path="AmDraw.ts"/>
 
 class AmTilemap extends AmGraphic
 {
@@ -13,7 +15,7 @@ class AmTilemap extends AmGraphic
 
 	public data:Array<Array<Array<number>>>;
 
-	constructor(texture:HTMLImageElement, tileWidth:number, tileHeight:number, columns:number, rows:number, stacking:boolean = true)
+	constructor(texture:AmTexture, tileWidth:number, tileHeight:number, columns:number, rows:number, stacking:boolean = true)
 	{
 		super(texture, new AmRectangle(0, 0, tileWidth, tileHeight));
 
@@ -106,10 +108,10 @@ class AmTilemap extends AmGraphic
 
 	public Render()
 	{
-		Am.context.save();
-		Am.context.translate(this.scenePosition.x, this.scenePosition.y);
-		Am.context.scale(this.scale.x, this.scale.y);
-		Am.context.translate( - this.origin.x, - this.origin.y);
+		AmDraw.PushTransform();
+		AmDraw.Translate(this.scenePosition.x, this.scenePosition.y);
+		AmDraw.Scale(this.scale.x, this.scale.y);
+		AmDraw.Translate(-this.origin.x, -this.origin.y);
 		for (var i = 0; i < this.columns; i ++)
 		{
 			for (var j = 0; j < this.rows; j ++)
@@ -120,13 +122,13 @@ class AmTilemap extends AmGraphic
 					var tx = (tileData[tile] % this.columns);
 					var ty = Math.floor(tileData[tile] / this.columns);
 
-					Am.context.drawImage(this.texture,
-						tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight,
-						i * this.tileWidth, j * this.tileHeight, this.tileWidth, this.tileHeight);
+					AmDraw.TextureClipped(this.texture, 
+						i * this.tileWidth, j * this.tileHeight, 
+						tx * this.tileWidth, ty * this.tileHeight, this.tileWidth, this.tileHeight);
 				}
 			}
 		}
-		Am.context.restore();
+		AmDraw.PullTransform();
 	}
 
 }

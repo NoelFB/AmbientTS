@@ -13,21 +13,30 @@ class Ambient
 	public height:number;
 	public fps:number;
 	public deltaTime:number;
+	public elapsedTime:number = 0;
+
 	public camera:AmPoint = new AmPoint(0, 0);
-	public clear:string = "#0e2129";
 	public keepPixelScale:boolean = false;
 	public snapCameraToPixels:boolean = false;
 	public smoothing:boolean = false;
-	public container:any;
-	public elapsedTime:number = 0;
+	public clear:string = "#0e2129";
 
-	// the main canvas to draw to
+	// callbacks
+	public onStart: () => void;
+	public onUpdate: () => void;
+	public onRender: () => void;
+	public onResize: () => void;
+
+	// the buffered canvas and the scaled (visible) canvas
+	public container:any;
 	public canvas:any;
 	public context:CanvasRenderingContext2D;
-
-	// the visible canvas in the browser
 	public canvasScaled:any;
 	public contextScaled:any;
+
+	// screen size
+	public get windowWidth():number { return document.documentElement.clientWidth; }
+	public get windowHeight():number { return document.documentElement.clientHeight; }
 
 	// input references
 	public mouse:AmMouse;
@@ -67,7 +76,7 @@ class Ambient
 		window.onload = () =>
 		{
 			// bg
-			document.head.title = this.name + " :: Ambient TS";
+			document.title = this.name;
 			document.body.style.backgroundColor = "#222";
 
 			// create the container ... can ignore this later, maybe
@@ -75,7 +84,7 @@ class Ambient
 			this.container.style.width = (this.width * this.scale) + "px";
 			this.container.style.height = (this.height * this.scale) + "px";
 			this.container.style.margin = "auto";
-			this.container.style.marginTop = "80px";
+			this.container.style.marginTop = ((this.windowHeight - this.height * this.scale) / 2) + "px";
 			this.container.style.boxShadow = "0px 0px 128px #444";
 			this.container.style.border = "1px solid #222";
 			document.body.appendChild(this.container);
@@ -115,12 +124,21 @@ class Ambient
 			// on window resize
 			window.onresize = () =>
 			{
+				this.container.style.marginTop = ((this.windowHeight - this.height * this.scale) / 2) + "px";
+				
 				if (this._fullscreen)
 				{
-					this.canvasScaled.width = document.documentElement.clientWidth;
-					this.canvasScaled.height = document.documentElement.clientHeight;
+					this.canvasScaled.width = this.windowWidth;
+					this.canvasScaled.height = this.windowHeight;
 				}
+
+				if (this.onResize)
+					this.onResize();
 			}
+
+			// we've started
+			if (this.onStart != null)
+				this.onStart();
 		}
 	}
 
@@ -144,6 +162,7 @@ class Ambient
 	public set scale(value:number)
 	{
 		this._scale = value;
+		this.container.style.marginTop = ((this.windowHeight - this.height * this.scale) / 2) + "px";
 		this.container.style.width = (this.width * this._scale) + "px";
 		this.container.style.height = (this.height * this._scale) + "px";
 		if (!this._fullscreen)
@@ -166,8 +185,8 @@ class Ambient
 			this.canvasScaled.style.position = "absolute";
 			this.canvasScaled.style.left = "0px";
 			this.canvasScaled.style.top = "0px";
-			this.canvasScaled.width = document.documentElement.clientWidth;
-			this.canvasScaled.height = document.documentElement.clientHeight;
+			this.canvasScaled.width = this.windowWidth;
+			this.canvasScaled.height = this.windowHeight;
 		}
 
 		this._fullscreen = !this._fullscreen;
@@ -221,6 +240,9 @@ class Ambient
 
 	public Update()
 	{
+		if (this.onUpdate != null)
+			this.onUpdate();
+
 		if (this._scene != null)
 		{
 			this._scene.Update();
@@ -253,9 +275,13 @@ class Ambient
 			if (!this.smoothing)
 				Am.DisableSmoothing(this.context);
 
+			// on-render callback
+			if (this.onRender != null)
+				this.onRender();
+
 			// draw scene
 			if (this._scene != null)
-			this._scene.Render();
+				this._scene.Render();
 
 			// restore translations
 			Am.context.restore();

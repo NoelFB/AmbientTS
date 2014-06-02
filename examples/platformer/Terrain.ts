@@ -1,6 +1,7 @@
 /// <reference path="../../ambient/Ambient.ts"/>
 /// <reference path="../../ambient/AmEntity.ts"/>
 /// <reference path="../../ambient/graphics/AmTilemap.ts"/>
+/// <reference path="../../ambient/graphics/AmDraw.ts"/>
 /// <reference path="../../ambient/colliders/AmHitgrid.ts"/>
 /// <reference path="Main.ts"/>
 
@@ -145,11 +146,6 @@ class Terrain extends AmEntity
 	public Render()
 	{
 		super.Render();
-
-		Am.context.beginPath();
-		Am.context.lineWidth = 1;
-		Am.context.strokeStyle = '#ff0000';
-		Am.context.rect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8);
-		Am.context.stroke();
+		AmDraw.HollowRect(Math.floor(Am.mouse.x / 8) * 8, Math.floor(Am.mouse.y / 8) * 8, 8, 8, 1, "#ff0000");
 	}
 }

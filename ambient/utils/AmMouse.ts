@@ -2,7 +2,7 @@
 
 class AmMouse
 {
-	public position:AmPoint = new AmPoint(0, 0);
+	private _position:AmPoint = new AmPoint(0, 0);
 
 	public leftPressed:boolean = false;
 	public leftReleased:boolean = false;
@@ -15,6 +15,13 @@ class AmMouse
 	public treatTouchAsMouse:boolean = true;
 
 	private canvas:HTMLElement;
+
+	public get position():AmPoint
+	{
+		var viewScale = Am.GetViewportScale();
+		var viewOffset:AmPoint = Am.GetViewportOffset();
+		return new AmPoint((this._position.x - viewOffset.x) / viewScale + Am.camera.x, (this._position.y - viewOffset.y) / viewScale + Am.camera.y);
+	}
 
 	public get x():number { return this.position.x; }
 	public set x(value:number) { this.position.x = value; }
@@ -57,9 +64,7 @@ class AmMouse
 
 		this.canvas.onmousemove = (e:MouseEvent) =>
 		{
-			var viewScale = Am.GetViewportScale();
-			var viewOffset:AmPoint = Am.GetViewportOffset();
-			this.position = new AmPoint((e.offsetX - viewOffset.x) / viewScale + Am.camera.x, (e.offsetY - viewOffset.y) / viewScale + Am.camera.y);
+			this._position = new AmPoint(e.offsetX, e.offsetY);
 		}
 
 		// touch events
@@ -85,9 +90,7 @@ class AmMouse
 		{
 			if (this.treatTouchAsMouse)
 			{
-				var viewScale = Am.GetViewportScale();
-				var viewOffset:AmPoint = Am.GetViewportOffset();
-				this.position = new AmPoint((e.changedTouches[0].pageX - viewOffset.x) / viewScale + Am.camera.x, (e.changedTouches[0].pageX - viewOffset.y) / viewScale + Am.camera.y);
+				this._position = new AmPoint(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
 			}
 		});
 	}

@@ -3,66 +3,50 @@
 
 class AmTexture
 {
-	public data:HTMLImageElement;
-	public frame:AmRectangle;
+	public image:HTMLImageElement;
 	public bounds:AmRectangle;
 
-	constructor(data:HTMLImageElement, bounds:AmRectangle, frame:AmRectangle)
-	{
-		this.data = data;
-		this.bounds = bounds;
+	public get width():number { return this.bounds.width; }
+	public get height():number { return this.bounds.height; }
 
-		if (frame == null)
-			this.frame = new AmRectangle(0, 0, bounds.width, bounds.height);
+	constructor(image:HTMLImageElement, bounds:AmRectangle)
+	{
+		this.image = image;
+		
+		if (bounds == null)
+			this.bounds = new AmRectangle(0, 0, image.width, image.height);
 		else
-			this.frame = frame;
+			this.bounds = bounds;
 	}
 
 	public SubTexture(subBounds:AmRectangle):AmTexture
 	{
-		var rect:AmRectangle = new AmRectangle(0,0,0,0);
-		var offset:AmPoint = AmPoint.Zero();
-
-		rect.x = this.bounds.x + this.frame.x + subBounds.x;
-		rect.y = this.bounds.y + this.frame.y + subBounds.y;
-		rect.width = subBounds.width;
-		rect.height = subBounds.height;
-
-		if (rect.x < this.bounds.x)
-		{
-			rect.width += (rect.x - this.bounds.x);
-			offset.x = (rect.x - this.bounds.x);
-			rect.x = this.bounds.x;
-		}
-		if (rect.y < this.bounds.y)
-		{
-			rect.height += (rect.y - this.bounds.y);
-			offset.y = (rect.y - this.bounds.y);
-			rect.y = this.bounds.y;
-		}
-		if (rect.x + rect.width > this.bounds.x + this.bounds.width)
-			rect.width = this.bounds.x + this.bounds.width - rect.x;
-		if (rect.y + rect.height > this.bounds.y + this.bounds.height)
-			rect.height = this.bounds.y + this.bounds.height - rect.y;
-
-		return new AmTexture(this.data, rect, new AmRectangle(offset.x, offset.y, subBounds.width, subBounds.height));
+		return new AmTexture(this.image, this.SubTextureRect(subBounds));
 	}
 
-	public Draw(context:CanvasRenderingContext2D, x:number, y:number, originX:number, originY:number, scaleX:number, scaleY:number, subBounds:AmRectangle)
+	public SubTextureRect(subBounds:AmRectangle):AmRectangle
 	{
-		if (subBounds != null)
+		var rect:AmRectangle = new AmRectangle(subBounds.x, subBounds.y, subBounds.width, subBounds.height);
+		
+		if (rect.x < 0)
 		{
-			var texture:AmTexture = this.SubTexture(subBounds);
-			texture.Draw(context, x, y, originX, originY, scaleX, scaleY, null);
+			rect.width += rect.x;
+			rect.x = 0;
 		}
-		else
+		if (rect.y < 0)
 		{
-			context.save();
-			context.translate(x + this.frame.x, y + this.frame.y);
-			context.scale(scaleX, scaleY);
-			context.translate( -originX, - originY);
-			context.drawImage(this.data, this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height, 0, 0, this.bounds.width, this.bounds.height);
-			context.restore();
+			rect.height += rect.y;
+			rect.y = 0;
 		}
+		if (rect.x + rect.width > this.bounds.width)
+			rect.width = this.bounds.width - rect.x;
+		if (rect.y + rect.height > this.bounds.height)
+			rect.height = this.bounds.height - rect.y;
+		if (rect.width < 0) 
+			rect.width = 0;
+		if (rect.height < 0)
+			rect.height = 0;
+
+		return new AmRectangle(this.bounds.x + rect.x, this.bounds.y + rect.y, rect.width, rect.height);
 	}
 }

@@ -1,4 +1,5 @@
 /// <reference path="../utils/AmDictionary.ts"/>
+/// <reference path="AmTexture.ts"/>
 
 class AmAssetInfo
 {
@@ -19,7 +20,7 @@ interface AmAssetCallback
 
 class AmAssets
 {
-	public textures:AmDictionary<HTMLImageElement> = { };
+	public textures:AmDictionary<AmTexture> = { };
 	public sounds:AmDictionary<HTMLAudioElement> = { };
 	public percent:number;
 
@@ -52,10 +53,16 @@ class AmAssets
 		for (var i = 0; i < this._textures.length; i ++)
 		{
 			var texture = new Image();
-			texture.onload = () => this.Step();
-			texture.src = this._textures[i].file;
+			((img:HTMLImageElement, name:string) =>
+			{
+				img.onload = () => 
+				{
+					this.textures[name] = new AmTexture(img, null);
+					this.Step();
+				}
+			})(texture, this._textures[i].name);
 
-			this.textures[this._textures[i].name] = texture;
+			texture.src = this._textures[i].file;
 		}
 
 		for (var i = 0; i < this._sounds.length; i ++)

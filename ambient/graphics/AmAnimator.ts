@@ -1,23 +1,24 @@
 /// <reference path="../Ambient.ts"/>
 /// <reference path="../utils/AmRectangle.ts"/>
 /// <reference path="../utils/AmDictionary.ts"/>
+/// <reference path="../data/AmTexture.ts"/>
 /// <reference path="AmGraphic.ts"/>
 
 class AmAnimation
 {
-public name:string;
-public frames:Array<number>
-public speed:number;
-public loop:boolean;
-public index:number = 0;
+	public name:string;
+	public frames:Array<number>
+	public speed:number;
+	public loop:boolean;
+	public index:number = 0;
 
-public constructor(name:string, frames:Array<number>, speed:number, loop:boolean)
-{
-this.name = name;
-this.frames = frames;
-this.speed = speed;
-this.loop = loop;
-}
+	public constructor(name:string, frames:Array<number>, speed:number, loop:boolean)
+	{
+		this.name = name;
+		this.frames = frames;
+		this.speed = speed;
+		this.loop = loop;
+	}
 }
 
 class AmAnimator extends AmGraphic
@@ -30,7 +31,7 @@ class AmAnimator extends AmGraphic
 	private _current:AmAnimation = null;
 	private _stopped:boolean = true;
 
-	constructor(texture:HTMLImageElement, frameWidth:number, frameHeight:number)
+	constructor(texture:AmTexture, frameWidth:number, frameHeight:number)
 	{
 		super(texture, new AmRectangle(0, 0, frameWidth, frameHeight));
 		this.frameWidth = frameWidth;
