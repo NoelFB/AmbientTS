@@ -1,3 +1,5 @@
+**This is no longer updated** - For my current WebGL game framework check out https://github.com/Drazzke/foster
+
 AmbientTS
 =========
 
